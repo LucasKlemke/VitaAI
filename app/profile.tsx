@@ -1,20 +1,19 @@
-import { Text, View, TouchableOpacity, ScrollView, Dimensions, Image } from 'react-native';
+import { Text, View, TouchableOpacity, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
+import Animated, { FadeIn } from 'react-native-reanimated';
 import { SignedIn, SignedOut, useUser } from '@clerk/clerk-expo'
 import { Redirect } from 'expo-router'
 import { useEffect, useState } from 'react'
 import { LinearGradient } from 'expo-linear-gradient'
 import { BlurView } from 'expo-blur'
 import SignOutButton from './components/SignOutButton'
-import { getUserProfile } from '@/lib/supabase'
+import { getUserProfile } from '@/lib/queries/userQueries'
 
 export default function Profile() {
   const router = useRouter();
   const { user } = useUser();
   const [userProfile, setUserProfile] = useState<any>(null);
-  const { width, height } = Dimensions.get('window');
 
   // Fetch user profile from Supabase when component mounts
   useEffect(() => {

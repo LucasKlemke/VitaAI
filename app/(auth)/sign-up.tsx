@@ -5,7 +5,7 @@ import { Link, useRouter } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import { LinearGradient } from 'expo-linear-gradient'
 import { BlurView } from 'expo-blur'
-import { createUserProfile } from '@/lib/supabase'
+import { createUserProfile } from '@/lib/queries/userQueries'
 
 export default function SignUpScreen() {
   const { isLoaded, signUp, setActive } = useSignUp()

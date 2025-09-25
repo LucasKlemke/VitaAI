@@ -1,4 +1,4 @@
-import { View, Text, Image, ScrollView, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, Image, ScrollView, StyleSheet } from 'react-native';
 import { useAtomValue } from 'jotai';
 import { analysisAtom } from '@/atoms/analysis';
 import Animated, { FadeIn, FadeInDown, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
@@ -69,13 +69,12 @@ const Page = () => {
   const analysis = useAtomValue(analysisAtom);
   const [isLoading, setIsLoading] = useState(true);
   const progressWidth = useSharedValue(0);
-  const { width, height } = Dimensions.get('window');
 
   useEffect(() => {
     if (analysis) {
       setIsLoading(false);
       // Animate the progress bar when analysis is available
-      progressWidth.value = withTiming(analysis.healthScore ?? 0, { duration: 1000 });
+      progressWidth.value = withTiming((analysis.confidence_score ?? 0) * 100, { duration: 1000 });
     }
   }, [analysis]);
 
@@ -168,7 +167,7 @@ const Page = () => {
               marginBottom: 8,
               textAlign: 'center'
             }}>
-              {analysis?.foodCategory}
+              {analysis?.food_category}
             </Text>
             <Text style={{ 
               fontSize: 24, 
@@ -176,7 +175,7 @@ const Page = () => {
               color: '#1f2937',
               textAlign: 'center'
             }}>
-              {analysis?.identifiedFood}
+              {analysis?.food_name}
             </Text>
           </Animated.View>
         </BlurView>
@@ -224,7 +223,7 @@ const Page = () => {
                   color: '#ff6b35',
                   marginLeft: 8
                 }}>
-                  {analysis?.healthScore ?? 0}/100
+                  {Math.round((analysis?.confidence_score ?? 0) * 100)}/100
                 </Text>
               </View>
             </View>
@@ -278,11 +277,11 @@ const Page = () => {
               showsHorizontalScrollIndicator={false}
               style={{ paddingVertical: 8 }}
             >
-              <NutritionBadge label="Calorias" value={analysis?.nutritionFacts.perPortion.calories ?? ''} />
-              <NutritionBadge label="Proteína" value={`${analysis?.nutritionFacts.perPortion.protein}g`} />
-              <NutritionBadge label="Carboidrato" value={`${analysis?.nutritionFacts.perPortion.carbs}g`} />
-              <NutritionBadge label="Gordura" value={`${analysis?.nutritionFacts.perPortion.fat}g`} />
-              <NutritionBadge label="Fibra" value={`${analysis?.nutritionFacts.perPortion.fiber}g`} />
+              <NutritionBadge label="Calorias" value={analysis?.macronutrients.calories?.toString() ?? ''} />
+              <NutritionBadge label="Proteína" value={`${analysis?.macronutrients.protein}g`} />
+              <NutritionBadge label="Carboidrato" value={`${analysis?.macronutrients.carbohydrates}g`} />
+              <NutritionBadge label="Gordura" value={`${analysis?.macronutrients.total_fat}g`} />
+              <NutritionBadge label="Fibra" value={`${analysis?.macronutrients.dietary_fiber}g`} />
             </ScrollView>
           </Animated.View>
         </BlurView>
@@ -327,15 +326,25 @@ const Page = () => {
               marginBottom: 12
             }}>
               {(() => {
-                const toPercent = (n: number): `${number}%` => `${n}%` as `${number}%`;
-                const protein = parseFloat(analysis?.nutritionFacts.macronutrientDistribution.proteinPercentage ?? '0');
-                const carbs = parseFloat(analysis?.nutritionFacts.macronutrientDistribution.carbsPercentage ?? '0');
-                const fat = parseFloat(analysis?.nutritionFacts.macronutrientDistribution.fatPercentage ?? '0');
+                const calories = analysis?.macronutrients.calories || 0;
+                const protein = analysis?.macronutrients.protein || 0;
+                const carbs = analysis?.macronutrients.carbohydrates || 0;
+                const fat = analysis?.macronutrients.total_fat || 0;
+                
+                const proteinCalories = protein * 4;
+                const carbsCalories = carbs * 4;
+                const fatCalories = fat * 9;
+                const totalCalories = proteinCalories + carbsCalories + fatCalories;
+                
+                const proteinPercent = totalCalories > 0 ? (proteinCalories / totalCalories) * 100 : 0;
+                const carbsPercent = totalCalories > 0 ? (carbsCalories / totalCalories) * 100 : 0;
+                const fatPercent = totalCalories > 0 ? (fatCalories / totalCalories) * 100 : 0;
+                
                 return (
                   <>
-                    <View style={{ backgroundColor: '#3b82f6', width: toPercent(protein) }} />
-                    <View style={{ backgroundColor: '#10b981', width: toPercent(carbs) }} />
-                    <View style={{ backgroundColor: '#f59e0b', width: toPercent(fat) }} />
+                    <View style={{ backgroundColor: '#3b82f6', width: `${proteinPercent}%` }} />
+                    <View style={{ backgroundColor: '#10b981', width: `${carbsPercent}%` }} />
+                    <View style={{ backgroundColor: '#f59e0b', width: `${fatPercent}%` }} />
                   </>
                 );
               })()}
@@ -345,56 +354,29 @@ const Page = () => {
               justifyContent: 'space-between' 
             }}>
               <Text style={{ fontSize: 14, color: '#6b7280' }}>
-                Proteína {analysis?.nutritionFacts.macronutrientDistribution.proteinPercentage}%
+                Proteína {(() => {
+                  const calories = analysis?.macronutrients.calories || 0;
+                  const protein = analysis?.macronutrients.protein || 0;
+                  const proteinCalories = protein * 4;
+                  return calories > 0 ? Math.round((proteinCalories / calories) * 100) : 0;
+                })()}%
               </Text>
               <Text style={{ fontSize: 14, color: '#6b7280' }}>
-                Carboidrato {analysis?.nutritionFacts.macronutrientDistribution.carbsPercentage}%
+                Carboidrato {(() => {
+                  const calories = analysis?.macronutrients.calories || 0;
+                  const carbs = analysis?.macronutrients.carbohydrates || 0;
+                  const carbsCalories = carbs * 4;
+                  return calories > 0 ? Math.round((carbsCalories / calories) * 100) : 0;
+                })()}%
               </Text>
               <Text style={{ fontSize: 14, color: '#6b7280' }}>
-                Gordura {analysis?.nutritionFacts.macronutrientDistribution.fatPercentage}%
+                Gordura {(() => {
+                  const calories = analysis?.macronutrients.calories || 0;
+                  const fat = analysis?.macronutrients.total_fat || 0;
+                  const fatCalories = fat * 9;
+                  return calories > 0 ? Math.round((fatCalories / calories) * 100) : 0;
+                })()}%
               </Text>
-            </View>
-          </Animated.View>
-        </BlurView>
-
-        {/* Health Tags */}
-        <BlurView
-          intensity={20}
-          tint="light"
-          style={{
-            backgroundColor: 'rgba(255, 255, 255, 0.25)',
-            borderRadius: 24,
-            padding: 24,
-            marginHorizontal: 24,
-            marginBottom: 16,
-            borderWidth: 1,
-            borderColor: 'rgba(255, 255, 255, 0.3)',
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 8 },
-            shadowOpacity: 0.1,
-            shadowRadius: 24,
-            elevation: 8
-          }}
-        >
-          <Animated.View
-            entering={FadeInDown.delay(600).duration(500)}
-          >
-            <Text style={{ 
-              fontSize: 20, 
-              fontWeight: 'bold', 
-              color: '#1f2937',
-              marginBottom: 16,
-              textAlign: 'center'
-            }}>
-              Características Principais
-            </Text>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-              {analysis?.healthBenefits.map((benefit, i) => (
-                <HealthTag key={`benefit-${i}`} text={benefit} positive={true} />
-              ))}
-              {analysis?.potentialConcerns.map((concern, i) => (
-                <HealthTag key={`concern-${i}`} text={concern} positive={false} />
-              ))}
             </View>
           </Animated.View>
         </BlurView>
@@ -472,11 +454,24 @@ const Page = () => {
 
               {/* Data Rows */}
               {(() => {
-                const perPortion = (analysis?.nutritionFacts?.perPortion ?? {}) as Record<string, string>;
-                const per100g = (analysis?.nutritionFacts?.per100g ?? {}) as Record<string, string>;
-                return Object.keys(perPortion).map((key) => (
+                const macros = analysis?.macronutrients;
+                if (!macros) return null;
+                
+                const nutritionData = [
+                  { label: 'Calorias', value: `${macros.calories}`, unit: 'kcal' },
+                  { label: 'Proteína', value: `${macros.protein}`, unit: 'g' },
+                  { label: 'Carboidratos', value: `${macros.carbohydrates}`, unit: 'g' },
+                  { label: 'Fibra', value: `${macros.dietary_fiber}`, unit: 'g' },
+                  { label: 'Gordura Total', value: `${macros.total_fat}`, unit: 'g' },
+                  { label: 'Gordura Saturada', value: `${macros.saturated_fat}`, unit: 'g' },
+                  { label: 'Colesterol', value: `${macros.cholesterol}`, unit: 'mg' },
+                  { label: 'Sódio', value: `${macros.sodium}`, unit: 'mg' },
+                  { label: 'Açúcar', value: `${macros.sugar}`, unit: 'g' }
+                ];
+                
+                return nutritionData.map((item, index) => (
                   <View
-                    key={key}
+                    key={index}
                     style={{
                       flexDirection: 'row',
                       justifyContent: 'space-between',
@@ -488,24 +483,23 @@ const Page = () => {
                     <Text style={{ 
                       fontWeight: '500', 
                       color: '#374151', 
-                      flex: 1,
-                      textTransform: 'capitalize'
+                      flex: 1
                     }}>
-                      {key}
+                      {item.label}
                     </Text>
                     <Text style={{ 
                       color: '#374151', 
                       flex: 1, 
                       textAlign: 'center' 
                     }}>
-                      {perPortion[key]}
+                      {item.value} {item.unit}
                     </Text>
                     <Text style={{ 
                       color: '#374151', 
                       flex: 1, 
                       textAlign: 'right' 
                     }}>
-                      {per100g[key] ?? ''}
+                      Por porção
                     </Text>
                   </View>
                 ));
@@ -513,88 +507,6 @@ const Page = () => {
             </View>
           </Animated.View>
         </BlurView>
-
-        {/* Additional Info Cards */}
-        <Animated.View
-          entering={FadeInDown.delay(800).duration(500)}
-          style={{ marginHorizontal: 24, marginBottom: 20 }}
-        >
-          <View style={{ gap: 16 }}>
-            {/* Preparation Tips Card */}
-            <BlurView
-              intensity={20}
-              tint="light"
-              style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.25)',
-                borderRadius: 24,
-                padding: 24,
-                borderWidth: 1,
-                borderColor: 'rgba(255, 255, 255, 0.3)',
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 8 },
-                shadowOpacity: 0.1,
-                shadowRadius: 24,
-                elevation: 8
-              }}
-            >
-              <Text style={{ 
-                fontSize: 18, 
-                fontWeight: 'bold', 
-                color: '#1f2937',
-                marginBottom: 12
-              }}>
-                Dicas de Preparo
-              </Text>
-              {analysis?.preparationTips.map((tip, i) => (
-                <Text key={i} style={{ 
-                  fontSize: 14, 
-                  color: '#6b7280',
-                  marginBottom: 8,
-                  lineHeight: 20
-                }}>
-                  • {tip}
-                </Text>
-              ))}
-            </BlurView>
-
-            {/* Storage Advice Card */}
-            <BlurView
-              intensity={20}
-              tint="light"
-              style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.25)',
-                borderRadius: 24,
-                padding: 24,
-                borderWidth: 1,
-                borderColor: 'rgba(255, 255, 255, 0.3)',
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 8 },
-                shadowOpacity: 0.1,
-                shadowRadius: 24,
-                elevation: 8
-              }}
-            >
-              <Text style={{ 
-                fontSize: 18, 
-                fontWeight: 'bold', 
-                color: '#1f2937',
-                marginBottom: 12
-              }}>
-                Recomendações de Armazenamento
-              </Text>
-              {analysis?.storageRecommendations.map((tip, i) => (
-                <Text key={i} style={{ 
-                  fontSize: 14, 
-                  color: '#6b7280',
-                  marginBottom: 8,
-                  lineHeight: 20
-                }}>
-                  • {tip}
-                </Text>
-              ))}
-            </BlurView>
-          </View>
-        </Animated.View>
       </ScrollView>
     </LinearGradient>
   );

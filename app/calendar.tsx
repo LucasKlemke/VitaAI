@@ -21,7 +21,6 @@ export default function Calendar() {
   const router = useRouter();
   const { user } = useUser();
   const [selectedDay, setSelectedDay] = useState<any>(null);
-  const { width, height } = Dimensions.get('window');
 
   // Generate calendar days for current month
   const generateCalendarDays = () => {
