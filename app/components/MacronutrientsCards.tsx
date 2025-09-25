@@ -1,5 +1,6 @@
 import { Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import Svg, { Circle } from 'react-native-svg';
 
 interface Macronutrients {
   protein: number;
@@ -12,91 +13,164 @@ interface MacronutrientsCardsProps {
 }
 
 export default function MacronutrientsCards({ macronutrients }: MacronutrientsCardsProps) {
+  // Define daily goals for each macronutrient
+  const proteinGoal = 150;
+  const fatGoal = 65;
+  const carbsGoal = 200;
+
+  // Calculate progress percentages
+  const proteinProgress = Math.min((macronutrients.protein / proteinGoal) * 100, 100);
+  const fatProgress = Math.min((macronutrients.fat / fatGoal) * 100, 100);
+  const carbsProgress = Math.min((macronutrients.carbs / carbsGoal) * 100, 100);
+
+  const radius = 25;
+  const strokeWidth = 4;
+  const circumference = 2 * Math.PI * radius;
+
+  const createProgressCircle = (progress: number, color: string, icon: string) => {
+    const strokeDashoffset = circumference - (progress / 100) * circumference;
+    
+    return (
+      <View style={{ alignItems: 'center', position: 'relative' }}>
+        <Svg width={60} height={60}>
+          {/* Background circle */}
+          <Circle
+            cx={30}
+            cy={30}
+            r={radius}
+            stroke="#e5e7eb"
+            strokeWidth={strokeWidth}
+            fill="none"
+          />
+          {/* Progress circle */}
+          <Circle
+            cx={30}
+            cy={30}
+            r={radius}
+            stroke={color}
+            strokeWidth={strokeWidth}
+            fill="none"
+            strokeDasharray={circumference}
+            strokeDashoffset={strokeDashoffset}
+            strokeLinecap="round"
+            transform={`rotate(-90 30 30)`}
+          />
+        </Svg>
+        {/* Icon in center */}
+        <View style={{ 
+          position: 'absolute', 
+          top: 30 - 10, 
+          left: 30 - 10 
+        }}>
+          <Ionicons name={icon as any} size={20} color={color} />
+        </View>
+      </View>
+    );
+  };
+
   return (
     <View style={{ 
       flexDirection: 'row', 
       gap: 12,
       marginBottom: 24 
     }}>
+      {/* Protein Card */}
       <View style={{
         flex: 1,
-        backgroundColor: 'rgba(255, 255, 255, 0.3)',
+        backgroundColor: 'white',
         borderRadius: 16,
         padding: 16,
-        borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.4)',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 4,
         alignItems: 'center'
       }}>
-        <Ionicons name="fitness" size={24} color="#3b82f6" style={{ marginBottom: 8 }} />
         <Text style={{ 
-          fontSize: 20, 
+          fontSize: 24, 
           fontWeight: 'bold', 
           color: '#1f2937',
-          marginBottom: 2
+          marginBottom: 4
         }}>
           {macronutrients.protein}g
         </Text>
         <Text style={{ 
           fontSize: 12, 
           color: '#6b7280',
-          textAlign: 'center'
+          textAlign: 'center',
+          marginBottom: 12,
+          fontWeight: '500'
         }}>
-          Proteína
+          Protein
         </Text>
+        {createProgressCircle(proteinProgress, '#3b82f6', 'fitness')}
       </View>
 
+      {/* Carbs Card */}
       <View style={{
         flex: 1,
-        backgroundColor: 'rgba(255, 255, 255, 0.3)',
+        backgroundColor: 'white',
         borderRadius: 16,
         padding: 16,
-        borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.4)',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 4,
         alignItems: 'center'
       }}>
-        <Ionicons name="water" size={24} color="#f59e0b" style={{ marginBottom: 8 }} />
         <Text style={{ 
-          fontSize: 20, 
+          fontSize: 24, 
           fontWeight: 'bold', 
           color: '#1f2937',
-          marginBottom: 2
-        }}>
-          {macronutrients.fat}g
-        </Text>
-        <Text style={{ 
-          fontSize: 12, 
-          color: '#6b7280',
-          textAlign: 'center'
-        }}>
-          Gordura
-        </Text>
-      </View>
-
-      <View style={{
-        flex: 1,
-        backgroundColor: 'rgba(255, 255, 255, 0.3)',
-        borderRadius: 16,
-        padding: 16,
-        borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.4)',
-        alignItems: 'center'
-      }}>
-        <Ionicons name="flash" size={24} color="#10b981" style={{ marginBottom: 8 }} />
-        <Text style={{ 
-          fontSize: 20, 
-          fontWeight: 'bold', 
-          color: '#1f2937',
-          marginBottom: 2
+          marginBottom: 4
         }}>
           {macronutrients.carbs}g
         </Text>
         <Text style={{ 
           fontSize: 12, 
           color: '#6b7280',
-          textAlign: 'center'
+          textAlign: 'center',
+          marginBottom: 12,
+          fontWeight: '500'
         }}>
-          Carboidrato
+          Carbs
         </Text>
+        {createProgressCircle(carbsProgress, '#10b981', 'flash')}
+      </View>
+
+      {/* Fat Card */}
+      <View style={{
+        flex: 1,
+        backgroundColor: 'white',
+        borderRadius: 16,
+        padding: 16,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 4,
+        alignItems: 'center'
+      }}>
+        <Text style={{ 
+          fontSize: 24, 
+          fontWeight: 'bold', 
+          color: '#1f2937',
+          marginBottom: 4
+        }}>
+          {macronutrients.fat}g
+        </Text>
+        <Text style={{ 
+          fontSize: 12, 
+          color: '#6b7280',
+          textAlign: 'center',
+          marginBottom: 12,
+          fontWeight: '500'
+        }}>
+          Fat
+        </Text>
+        {createProgressCircle(fatProgress, '#f59e0b', 'water')}
       </View>
     </View>
   );

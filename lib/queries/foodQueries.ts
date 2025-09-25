@@ -129,3 +129,240 @@ export const getFoodEntriesByDate = async (userId: string, date: string) => {
     throw error;
   }
 };
+
+// Function to get user's food entries for a date range (for calendar)
+export const getFoodEntriesByDateRange = async (userId: string, startDate: string, endDate: string) => {
+  try {
+    const { data, error } = await supabase
+      .from('food_entries')
+      .select(`
+        id,
+        date,
+        meal_type,
+        food_name,
+        portion_size,
+        portion_description,
+        macronutrients(
+          calories,
+          protein,
+          carbohydrates,
+          total_fat
+        )
+      `)
+      .eq('user_id', userId)
+      .gte('date', startDate)
+      .lte('date', endDate)
+      .order('date', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching food entries by date range:', error);
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Failed to fetch food entries by date range:', error);
+    throw error;
+  }
+};
+
+// Function to get aggregated daily nutrition data for calendar
+export const getDailyNutritionSummary = async (userId: string, startDate: string, endDate: string) => {
+  try {
+    const { data, error } = await supabase
+      .from('food_entries')
+      .select(`
+        id,
+        date,
+        meal_type,
+        food_name,
+        macronutrients!inner(
+          calories,
+          protein,
+          carbohydrates,
+          total_fat
+        )
+      `)
+      .eq('user_id', userId)
+      .gte('date', startDate)
+      .lte('date', endDate)
+      .order('date', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching daily nutrition summary:', error);
+      throw error;
+    }
+
+    // Aggregate data by date
+    const aggregatedData: { [key: string]: any } = {};
+    
+    data?.forEach(entry => {
+      const date = entry.date;
+      
+      if (!aggregatedData[date]) {
+        aggregatedData[date] = {
+          date,
+          calories: 0,
+          protein: 0,
+          carbs: 0,
+          fat: 0,
+          meals: 0
+        };
+      }
+      
+      if (entry.macronutrients && entry.macronutrients.length > 0) {
+        const macro = entry.macronutrients[0]; // Get first macronutrient entry
+        aggregatedData[date].calories += Number(macro.calories) || 0;
+        aggregatedData[date].protein += Number(macro.protein) || 0;
+        aggregatedData[date].carbs += Number(macro.carbohydrates) || 0;
+        aggregatedData[date].fat += Number(macro.total_fat) || 0;
+        aggregatedData[date].meals += 1;
+      }
+    });
+
+    return Object.values(aggregatedData);
+  } catch (error) {
+    console.error('Failed to fetch daily nutrition summary:', error);
+    throw error;
+  }
+};
+
+// Alternative approach: Get data separately and join manually
+export const getDailyNutritionSummaryAlternative = async (userId: string, startDate: string, endDate: string) => {
+  try {
+    // Get food entries first
+    const { data: foodEntries, error: foodError } = await supabase
+      .from('food_entries')
+      .select('id, date, meal_type, food_name')
+      .eq('user_id', userId)
+      .gte('date', startDate)
+      .lte('date', endDate)
+      .order('date', { ascending: true });
+
+    if (foodError) {
+      console.error('Error fetching food entries:', foodError);
+      throw foodError;
+    }
+
+    if (!foodEntries || foodEntries.length === 0) {
+      return [];
+    }
+
+    // Get macronutrients for all food entries
+    const foodEntryIds = foodEntries.map(entry => entry.id);
+    const { data: macronutrients, error: macroError } = await supabase
+      .from('macronutrients')
+      .select('food_entry_id, calories, protein, carbohydrates, total_fat')
+      .in('food_entry_id', foodEntryIds);
+
+    if (macroError) {
+      console.error('Error fetching macronutrients:', macroError);
+      throw macroError;
+    }
+
+    // Create a map of food_entry_id to macronutrients
+    const macroMap = new Map();
+    macronutrients?.forEach(macro => {
+      macroMap.set(macro.food_entry_id, macro);
+    });
+
+    // Aggregate data by date
+    const aggregatedData: { [key: string]: any } = {};
+    
+    foodEntries.forEach(entry => {
+      const date = entry.date;
+      const macro = macroMap.get(entry.id);
+      
+      if (!aggregatedData[date]) {
+        aggregatedData[date] = {
+          date,
+          calories: 0,
+          protein: 0,
+          carbs: 0,
+          fat: 0,
+          meals: 0
+        };
+      }
+      
+      if (macro) {
+        aggregatedData[date].calories += Number(macro.calories) || 0;
+        aggregatedData[date].protein += Number(macro.protein) || 0;
+        aggregatedData[date].carbs += Number(macro.carbohydrates) || 0;
+        aggregatedData[date].fat += Number(macro.total_fat) || 0;
+        aggregatedData[date].meals += 1;
+      }
+    });
+
+    return Object.values(aggregatedData);
+  } catch (error) {
+    console.error('Failed to fetch daily nutrition summary (alternative):', error);
+    throw error;
+  }
+};
+
+// Function to get today's nutrition summary for dashboard
+export const getTodayNutritionSummary = async (userId: string) => {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Get food entries for today
+    const { data: foodEntries, error: foodError } = await supabase
+      .from('food_entries')
+      .select('id, meal_type, food_name')
+      .eq('user_id', userId)
+      .eq('date', today)
+      .order('time', { ascending: true });
+
+    if (foodError) {
+      console.error('Error fetching today food entries:', foodError);
+      throw foodError;
+    }
+
+    if (!foodEntries || foodEntries.length === 0) {
+      return {
+        calories: 0,
+        protein: 0,
+        carbs: 0,
+        fat: 0,
+        meals: 0
+      };
+    }
+
+    // Get macronutrients for today's food entries
+    const foodEntryIds = foodEntries.map(entry => entry.id);
+    const { data: macronutrients, error: macroError } = await supabase
+      .from('macronutrients')
+      .select('food_entry_id, calories, protein, carbohydrates, total_fat')
+      .in('food_entry_id', foodEntryIds);
+
+    if (macroError) {
+      console.error('Error fetching today macronutrients:', macroError);
+      throw macroError;
+    }
+
+    // Aggregate today's data
+    let totalCalories = 0;
+    let totalProtein = 0;
+    let totalCarbs = 0;
+    let totalFat = 0;
+
+    macronutrients?.forEach(macro => {
+      totalCalories += Number(macro.calories) || 0;
+      totalProtein += Number(macro.protein) || 0;
+      totalCarbs += Number(macro.carbohydrates) || 0;
+      totalFat += Number(macro.total_fat) || 0;
+    });
+
+    return {
+      calories: Math.round(totalCalories),
+      protein: Math.round(totalProtein),
+      carbs: Math.round(totalCarbs),
+      fat: Math.round(totalFat),
+      meals: foodEntries.length
+    };
+  } catch (error) {
+    console.error('Failed to fetch today nutrition summary:', error);
+    throw error;
+  }
+};
+

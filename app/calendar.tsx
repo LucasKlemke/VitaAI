@@ -1,4 +1,4 @@
-import { Text, View, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
+import { Text, View, TouchableOpacity, ScrollView, Dimensions, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
@@ -7,20 +7,61 @@ import { Redirect } from 'expo-router'
 import { useEffect, useState } from 'react'
 import { LinearGradient } from 'expo-linear-gradient'
 import { BlurView } from 'expo-blur'
-
-// Mock data for days with registered meals
-const daysWithMeals = [
-  { date: '2024-01-15', calories: 1850, protein: 95, fat: 78, carbs: 210, meals: 3 },
-  { date: '2024-01-14', calories: 1650, protein: 85, fat: 70, carbs: 190, meals: 2 },
-  { date: '2024-01-13', calories: 2100, protein: 110, fat: 85, carbs: 240, meals: 4 },
-  { date: '2024-01-12', calories: 1750, protein: 90, fat: 75, carbs: 200, meals: 3 },
-  { date: '2024-01-10', calories: 1950, protein: 100, fat: 80, carbs: 220, meals: 3 },
-];
+import { getDailyNutritionSummaryAlternative } from '../lib/queries/foodQueries'
+import { getUserProfile } from '../lib/queries/userQueries'
 
 export default function Calendar() {
   const router = useRouter();
   const { user } = useUser();
   const [selectedDay, setSelectedDay] = useState<any>(null);
+  const [daysWithMeals, setDaysWithMeals] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch user's nutrition data for the current month
+  useEffect(() => {
+    const fetchNutritionData = async () => {
+      if (!user?.id) return;
+      
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // First, get the user profile to get the database user ID
+        const userProfile = await getUserProfile(user.id);
+        if (!userProfile?.id) {
+          throw new Error('User profile not found');
+        }
+        
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = today.getMonth();
+        
+        // Calculate start and end dates for the calendar view (6 weeks)
+        const firstDay = new Date(year, month, 1);
+        const startDate = new Date(firstDay);
+        startDate.setDate(startDate.getDate() - firstDay.getDay());
+        
+        const endDate = new Date(startDate);
+        endDate.setDate(endDate.getDate() + 41); // 6 weeks
+        
+        const data = await getDailyNutritionSummaryAlternative(
+          userProfile.id, // Use database user ID instead of Clerk ID
+          startDate.toISOString().split('T')[0],
+          endDate.toISOString().split('T')[0]
+        );
+        
+        setDaysWithMeals(data);
+      } catch (err) {
+        console.error('Error fetching nutrition data:', err);
+        setError('Erro ao carregar dados nutricionais');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchNutritionData();
+  }, [user?.id]);
 
   // Generate calendar days for current month
   const generateCalendarDays = () => {
@@ -135,69 +176,161 @@ export default function Calendar() {
                   marginBottom: 24
                 }}
               >
-                {/* Days of week header */}
-                <View style={{ 
-                  flexDirection: 'row', 
-                  marginBottom: 16 
-                }}>
-                  {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((day, index) => (
-                    <View key={index} style={{ flex: 1, alignItems: 'center' }}>
-                      <Text style={{ 
-                        fontSize: 14, 
-                        fontWeight: '600', 
-                        color: '#6b7280' 
-                      }}>
-                        {day}
-                      </Text>
-                    </View>
-                  ))}
-                </View>
-
-                {/* Calendar grid */}
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-                  {calendarDays.map((day, index) => (
+                {loading ? (
+                  <View style={{ 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    paddingVertical: 40 
+                  }}>
+                    <ActivityIndicator size="large" color="#ff6b35" />
+                    <Text style={{ 
+                      marginTop: 12, 
+                      fontSize: 16, 
+                      color: '#6b7280' 
+                    }}>
+                      Carregando dados...
+                    </Text>
+                  </View>
+                ) : error ? (
+                  <View style={{ 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    paddingVertical: 40 
+                  }}>
+                    <Ionicons name="alert-circle" size={48} color="#ef4444" />
+                    <Text style={{ 
+                      marginTop: 12, 
+                      fontSize: 16, 
+                      color: '#ef4444',
+                      textAlign: 'center'
+                    }}>
+                      {error}
+                    </Text>
                     <TouchableOpacity
-                      key={index}
-                      style={{
-                        width: '14.28%',
-                        aspectRatio: 1,
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        borderRadius: 8,
-                        marginBottom: 4,
-                        backgroundColor: day.hasData 
-                          ? 'rgba(255, 107, 53, 0.2)' 
-                          : 'transparent',
-                        borderWidth: day.hasData ? 1 : 0,
-                        borderColor: day.hasData ? '#ff6b35' : 'transparent'
+                      onPress={() => {
+                        setError(null);
+                        setLoading(true);
+                        // Re-fetch data
+                        const fetchNutritionData = async () => {
+                          if (!user?.id) return;
+                          
+                          try {
+                            // First, get the user profile to get the database user ID
+                            const userProfile = await getUserProfile(user.id);
+                            if (!userProfile?.id) {
+                              throw new Error('User profile not found');
+                            }
+                            
+                            const today = new Date();
+                            const year = today.getFullYear();
+                            const month = today.getMonth();
+                            
+                            const firstDay = new Date(year, month, 1);
+                            const startDate = new Date(firstDay);
+                            startDate.setDate(startDate.getDate() - firstDay.getDay());
+                            
+                            const endDate = new Date(startDate);
+                            endDate.setDate(endDate.getDate() + 41);
+                            
+                            const data = await getDailyNutritionSummaryAlternative(
+                              userProfile.id, // Use database user ID instead of Clerk ID
+                              startDate.toISOString().split('T')[0],
+                              endDate.toISOString().split('T')[0]
+                            );
+                            
+                            setDaysWithMeals(data);
+                          } catch (err) {
+                            console.error('Error fetching nutrition data:', err);
+                            setError('Erro ao carregar dados nutricionais');
+                          } finally {
+                            setLoading(false);
+                          }
+                        };
+                        fetchNutritionData();
                       }}
-                      onPress={() => day.hasData && setSelectedDay(day.data)}
-                      disabled={!day.hasData}
-                      activeOpacity={0.7}
+                      style={{
+                        marginTop: 16,
+                        backgroundColor: '#ff6b35',
+                        paddingHorizontal: 20,
+                        paddingVertical: 10,
+                        borderRadius: 8
+                      }}
                     >
                       <Text style={{ 
-                        fontSize: 16, 
-                        fontWeight: day.hasData ? '600' : '400',
-                        color: day.hasData 
-                          ? '#ff6b35' 
-                          : day.isCurrentMonth 
-                            ? '#374151' 
-                            : '#d1d5db'
+                        color: 'white', 
+                        fontWeight: '600' 
                       }}>
-                        {day.date.getDate()}
+                        Tentar Novamente
                       </Text>
-                      {day.hasData && (
-                        <View style={{
-                          width: 4,
-                          height: 4,
-                          borderRadius: 2,
-                          backgroundColor: '#ff6b35',
-                          marginTop: 2
-                        }} />
-                      )}
                     </TouchableOpacity>
-                  ))}
-                </View>
+                  </View>
+                ) : (
+                  <>
+                    {/* Days of week header */}
+                    <View style={{ 
+                      flexDirection: 'row', 
+                      marginBottom: 16 
+                    }}>
+                      {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((day, index) => (
+                        <View key={index} style={{ flex: 1, alignItems: 'center' }}>
+                          <Text style={{ 
+                            fontSize: 14, 
+                            fontWeight: '600', 
+                            color: '#6b7280' 
+                          }}>
+                            {day}
+                          </Text>
+                        </View>
+                      ))}
+                    </View>
+
+                    {/* Calendar grid */}
+                    <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+                      {calendarDays.map((day, index) => (
+                        <TouchableOpacity
+                          key={index}
+                          style={{
+                            width: '14.28%',
+                            aspectRatio: 1,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            borderRadius: 8,
+                            marginBottom: 4,
+                            backgroundColor: day.hasData 
+                              ? 'rgba(255, 107, 53, 0.2)' 
+                              : 'transparent',
+                            borderWidth: day.hasData ? 1 : 0,
+                            borderColor: day.hasData ? '#ff6b35' : 'transparent'
+                          }}
+                          onPress={() => day.hasData && setSelectedDay(day.data)}
+                          disabled={!day.hasData}
+                          activeOpacity={0.7}
+                        >
+                          <Text style={{ 
+                            fontSize: 16, 
+                            fontWeight: day.hasData ? '600' : '400',
+                            color: day.hasData 
+                              ? '#ff6b35' 
+                              : day.isCurrentMonth 
+                                ? '#374151' 
+                                : '#d1d5db'
+                          }}>
+                            {day.date.getDate()}
+                          </Text>
+                          {day.hasData && (
+                            <View style={{
+                              width: 4,
+                              height: 4,
+                              borderRadius: 2,
+                              backgroundColor: '#ff6b35',
+                              marginTop: 2
+                            }} />
+                          )}
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  </>
+                )}
               </BlurView>
 
               {/* Selected Day Summary */}
@@ -252,7 +385,7 @@ export default function Calendar() {
                       color: '#ff6b35',
                       marginBottom: 4
                     }}>
-                      {selectedDay.calories}
+                      {Math.round(selectedDay.calories)}
                     </Text>
                     <Text style={{ 
                       fontSize: 14, 
@@ -279,7 +412,7 @@ export default function Calendar() {
                         color: '#1f2937',
                         marginBottom: 2
                       }}>
-                        {selectedDay.protein}g
+                        {Math.round(selectedDay.protein)}g
                       </Text>
                       <Text style={{ 
                         fontSize: 12, 
@@ -302,7 +435,7 @@ export default function Calendar() {
                         color: '#1f2937',
                         marginBottom: 2
                       }}>
-                        {selectedDay.fat}g
+                        {Math.round(selectedDay.fat)}g
                       </Text>
                       <Text style={{ 
                         fontSize: 12, 
@@ -325,7 +458,7 @@ export default function Calendar() {
                         color: '#1f2937',
                         marginBottom: 2
                       }}>
-                        {selectedDay.carbs}g
+                        {Math.round(selectedDay.carbs)}g
                       </Text>
                       <Text style={{ 
                         fontSize: 12, 

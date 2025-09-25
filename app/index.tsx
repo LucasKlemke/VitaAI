@@ -7,7 +7,7 @@ import { toast } from 'sonner-native';
 import { SignedIn, SignedOut, useUser } from '@clerk/clerk-expo'
 import { Redirect } from 'expo-router'
 import { getUserProfile } from '@/lib/queries/userQueries';
-import { saveFoodEntry } from '@/lib/queries/foodQueries';
+import { saveFoodEntry, getTodayNutritionSummary } from '@/lib/queries/foodQueries';
 import { useEffect, useState } from 'react'
 import { LinearGradient } from 'expo-linear-gradient'
 import MainDashboard from './components/MainDashboard';
@@ -17,16 +17,15 @@ export default function Index() {
   const setAnalysis = useSetAtom(analysisAtom);
   const { user } = useUser();
   const [userProfile, setUserProfile] = useState<any>(null);
+  const [dailyNutrition, setDailyNutrition] = useState({
+    calories: 0,
+    protein: 0,
+    fat: 0,
+    carbs: 0,
+    meals: 0
+  });
+  const [loadingNutrition, setLoadingNutrition] = useState(true);
   const { width, height } = Dimensions.get('window');
-  
-  // Mock data for daily nutrition summary
-  const dailyNutrition = {
-    calories: 1850,
-    protein: 95,
-    fat: 78,
-    carbs: 210,
-    meals: 3
-  };
 
   // Fetch user profile from Supabase when component mounts
   useEffect(() => {
@@ -44,6 +43,33 @@ export default function Index() {
 
     fetchUserProfile();
   }, [user?.id]);
+
+  // Fetch today's nutrition data
+  useEffect(() => {
+    const fetchTodayNutrition = async () => {
+      if (userProfile?.id) {
+        try {
+          setLoadingNutrition(true);
+          const nutritionData = await getTodayNutritionSummary(userProfile.id);
+          setDailyNutrition(nutritionData);
+        } catch (error) {
+          console.error('Error fetching today nutrition:', error);
+          // Set default values on error
+          setDailyNutrition({
+            calories: 0,
+            protein: 0,
+            fat: 0,
+            carbs: 0,
+            meals: 0
+          });
+        } finally {
+          setLoadingNutrition(false);
+        }
+      }
+    };
+
+    fetchTodayNutrition();
+  }, [userProfile?.id]);
 
   const captureImage = async (camera = false) => {
     let result: any;
@@ -114,6 +140,16 @@ export default function Index() {
                     data.mealType
                   );
                   console.log('Food entry saved successfully:', savedEntry.id);
+                  
+                  // Refresh today's nutrition data
+                  if (userProfile?.id) {
+                    try {
+                      const updatedNutrition = await getTodayNutritionSummary(userProfile.id);
+                      setDailyNutrition(updatedNutrition);
+                    } catch (refreshError) {
+                      console.error('Error refreshing nutrition data:', refreshError);
+                    }
+                  }
                 } catch (saveError) {
                   console.error('Failed to save food entry:', saveError);
                 }
@@ -157,6 +193,7 @@ export default function Index() {
               height={height}
               userName={userProfile?.full_name || user?.firstName || 'Usuário'}
               dailyNutrition={dailyNutrition}
+              loadingNutrition={loadingNutrition}
               onCameraPress={() => captureImage(true)}
               onGalleryPress={() => captureImage(false)}
             />
