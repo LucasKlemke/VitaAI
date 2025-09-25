@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "Nutri-Scan",
-    "slug": "Nutri-Scan",
+    "name": "Vita.AI",
+    "slug": "Vita.AI",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/vita-icon-black.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -13,14 +13,14 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/icon.png",
+        "foregroundImage": "./assets/images/vita-icon-black.png",
         "backgroundColor": "#ffffff"
       }
     },
     "web": {
       "bundler": "metro",
       "output": "server",
-      "favicon": "./assets/images/AppIcon.png"
+      "favicon": "./assets/images/vita-icon-black.png"
     },
     "plugins": [
       [
@@ -32,7 +32,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/TransparentAppIcon.png",
+          "image": "./assets/images/vita-icon-black.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#008080"
