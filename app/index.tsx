@@ -22,6 +22,15 @@ export default function Index() {
   const [userProfile, setUserProfile] = useState<any>(null);
   const { width, height } = Dimensions.get('window');
   
+  // Mock data for daily nutrition summary
+  const dailyNutrition = {
+    calories: 1850,
+    protein: 95,
+    fat: 78,
+    carbs: 210,
+    meals: 3
+  };
+  
   console.log(user?.emailAddresses);
   console.log(user?.id)
 
@@ -127,7 +136,7 @@ export default function Index() {
           style={{ flex: 1 }}
         >
           <ScrollView 
-            contentContainerStyle={{ flexGrow: 1, paddingBottom: 120 }}
+            contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}
             keyboardShouldPersistTaps="handled"
           >
             <View style={{ 
@@ -185,111 +194,172 @@ export default function Index() {
                   elevation: 8
                 }}
               >
-                {/* Header */}
+                {/* Dashboard Header */}
                 <Animated.View 
                   entering={FadeIn.delay(100)}
-                  style={{ alignItems: 'center', marginBottom: 32 }}
+                  style={{ marginBottom: 24 }}
                 >
-                  <View style={{
-                    width: 60,
-                    height: 60,
-                    borderRadius: 30,
-                    backgroundColor: 'rgba(255, 165, 0, 0.2)',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    marginBottom: 16,
-                    borderWidth: 1,
-                    borderColor: 'rgba(255, 255, 255, 0.3)'
-                  }}>
-                    <Ionicons name="leaf" size={28} color="#ff6b35" />
-                  </View>
                   <Text style={{ 
-                    fontSize: 24, 
+                    fontSize: 28, 
                     fontWeight: 'bold', 
                     color: '#1f2937',
                     marginBottom: 8
                   }}>
-                    Vita.AI
+                    Olá, {userProfile?.full_name || user?.firstName || 'Usuário'}! 👋
                   </Text>
                   <Text style={{ 
-                    fontSize: 18, 
-                    fontWeight: '600', 
-                    color: '#374151',
-                    marginBottom: 4
-                  }}>
-                    Análise Nutricional
-                  </Text>
-                  <Text style={{ 
-                    fontSize: 14, 
+                    fontSize: 16, 
                     color: '#6b7280',
-                    textAlign: 'center',
-                    marginBottom: 16
+                    marginBottom: 24
                   }}>
-                    Tire uma foto para analisar o valor nutricional da sua refeição
+                    Aqui está o seu resumo de hoje
                   </Text>
-                  
-                  {/* User Profile Display */}
-                  {userProfile && (
-                    <View style={{
-                      backgroundColor: 'rgba(255, 255, 255, 0.4)',
-                      borderRadius: 16,
-                      padding: 16,
-                      borderWidth: 1,
-                      borderColor: 'rgba(255, 255, 255, 0.5)',
-                      marginBottom: 16,
-                      width: '100%'
-                    }}>
-                      <Text style={{ 
-                        fontSize: 16, 
-                        fontWeight: '600', 
-                        color: '#1f2937',
-                        textAlign: 'center',
-                        marginBottom: 4
-                      }}>
-                        Bem-vindo, {userProfile.full_name || userProfile.email}!
-                      </Text>
-                      <Text style={{ 
-                        fontSize: 12, 
-                        color: '#6b7280',
-                        textAlign: 'center'
-                      }}>
-                        Pronto para analisar sua próxima refeição
-                      </Text>
-                    </View>
-                  )}
-                </Animated.View>
 
-                {/* App Icon */}
-                <Animated.View
-                  entering={FadeIn.delay(300)}
-                  style={{ alignItems: 'center', marginBottom: 32 }}
-                >
+                  {/* Daily Calories Card */}
                   <View style={{
-                    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.4)',
                     borderRadius: 20,
-                    padding: 16,
+                    padding: 20,
                     borderWidth: 1,
-                    borderColor: 'rgba(255, 255, 255, 0.4)',
+                    borderColor: 'rgba(255, 255, 255, 0.5)',
+                    marginBottom: 20,
                     shadowColor: '#000',
                     shadowOffset: { width: 0, height: 4 },
                     shadowOpacity: 0.1,
                     shadowRadius: 8,
                     elevation: 4
                   }}>
-                    <Image
-                      source={AppIcon}
-                      style={{
-                        width: 200,
-                        height: 160,
-                        borderRadius: 16
-                      }}
-                      resizeMode="contain"
-                    />
+                    <View style={{ alignItems: 'center' }}>
+                      <Text style={{ 
+                        fontSize: 18, 
+                        fontWeight: '600', 
+                        color: '#374151',
+                        marginBottom: 8
+                      }}>
+                        Calorias Registradas Hoje
+                      </Text>
+                      <Text style={{ 
+                        fontSize: 36, 
+                        fontWeight: 'bold', 
+                        color: '#ff6b35',
+                        marginBottom: 4
+                      }}>
+                        {dailyNutrition.calories}
+                      </Text>
+                      <Text style={{ 
+                        fontSize: 14, 
+                        color: '#6b7280'
+                      }}>
+                        de {dailyNutrition.meals} refeições
+                      </Text>
+                    </View>
+                  </View>
+
+                  {/* Macronutrients Cards */}
+                  <View style={{ 
+                    flexDirection: 'row', 
+                    gap: 12,
+                    marginBottom: 24 
+                  }}>
+                    <View style={{
+                      flex: 1,
+                      backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                      borderRadius: 16,
+                      padding: 16,
+                      borderWidth: 1,
+                      borderColor: 'rgba(255, 255, 255, 0.4)',
+                      alignItems: 'center'
+                    }}>
+                      <Ionicons name="fitness" size={24} color="#3b82f6" style={{ marginBottom: 8 }} />
+                      <Text style={{ 
+                        fontSize: 20, 
+                        fontWeight: 'bold', 
+                        color: '#1f2937',
+                        marginBottom: 2
+                      }}>
+                        {dailyNutrition.protein}g
+                      </Text>
+                      <Text style={{ 
+                        fontSize: 12, 
+                        color: '#6b7280',
+                        textAlign: 'center'
+                      }}>
+                        Proteína
+                      </Text>
+                    </View>
+
+                    <View style={{
+                      flex: 1,
+                      backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                      borderRadius: 16,
+                      padding: 16,
+                      borderWidth: 1,
+                      borderColor: 'rgba(255, 255, 255, 0.4)',
+                      alignItems: 'center'
+                    }}>
+                      <Ionicons name="water" size={24} color="#f59e0b" style={{ marginBottom: 8 }} />
+                      <Text style={{ 
+                        fontSize: 20, 
+                        fontWeight: 'bold', 
+                        color: '#1f2937',
+                        marginBottom: 2
+                      }}>
+                        {dailyNutrition.fat}g
+                      </Text>
+                      <Text style={{ 
+                        fontSize: 12, 
+                        color: '#6b7280',
+                        textAlign: 'center'
+                      }}>
+                        Gordura
+                      </Text>
+                    </View>
+
+                    <View style={{
+                      flex: 1,
+                      backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                      borderRadius: 16,
+                      padding: 16,
+                      borderWidth: 1,
+                      borderColor: 'rgba(255, 255, 255, 0.4)',
+                      alignItems: 'center'
+                    }}>
+                      <Ionicons name="flash" size={24} color="#10b981" style={{ marginBottom: 8 }} />
+                      <Text style={{ 
+                        fontSize: 20, 
+                        fontWeight: 'bold', 
+                        color: '#1f2937',
+                        marginBottom: 2
+                      }}>
+                        {dailyNutrition.carbs}g
+                      </Text>
+                      <Text style={{ 
+                        fontSize: 12, 
+                        color: '#6b7280',
+                        textAlign: 'center'
+                      }}>
+                        Carboidrato
+                      </Text>
+                    </View>
                   </View>
                 </Animated.View>
 
                 {/* Action Buttons */}
-                <View style={{ gap: 16, marginBottom: 24 }}>
+                <Animated.View 
+                  entering={FadeIn.delay(300)}
+                  style={{ marginBottom: 16 }}
+                >
+                  <Text style={{ 
+                    fontSize: 18, 
+                    fontWeight: '600', 
+                    color: '#374151',
+                    textAlign: 'center',
+                    marginBottom: 16
+                  }}>
+                    Registrar Nova Refeição
+                  </Text>
+                
+                  <View style={{ gap: 16, marginBottom: 24 }}>
                   <Animated.View entering={FadeInDown.delay(500)}>
                     <TouchableOpacity
                       style={{
@@ -349,62 +419,12 @@ export default function Index() {
                       </Text>
                     </TouchableOpacity>
                   </Animated.View>
-                </View>
-
-                {/* Footer */}
-                <Animated.View
-                  entering={FadeIn.delay(900)}
-                  style={{ alignItems: 'center' }}
-                >
-                  <Text style={{ 
-                    fontSize: 12, 
-                    color: '#6b7280',
-                    textAlign: 'center'
-                  }}>
-                    Powered by <Text style={{ color: '#ff6b35', fontWeight: '600' }}>Gemini-AI</Text>
-                  </Text>
+                  </View>
                 </Animated.View>
               </BlurView>
 
             </View>
           </ScrollView>
-
-          {/* Bottom Navigation Bar */}
-          <BlurView
-            intensity={20}
-            tint="light"
-            style={{
-              position: 'absolute',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              backgroundColor: 'rgba(255, 255, 255, 0.25)',
-              borderTopWidth: 1,
-              borderTopColor: 'rgba(255, 255, 255, 0.3)',
-              paddingTop: 16,
-              paddingBottom: 32,
-              paddingHorizontal: 24,
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: -4 },
-              shadowOpacity: 0.1,
-              shadowRadius: 8,
-              elevation: 8
-            }}
-          >
-            <View style={{ 
-              flexDirection: 'row', 
-              gap: 12,
-              justifyContent: 'center',
-              alignItems: 'center'
-            }}>
-
-              {/* Sign Out Button */}
-              <Animated.View entering={FadeInDown.delay(900)}>
-             
-                  <SignOutButton />
-              </Animated.View>
-            </View>
-          </BlurView>
         </LinearGradient>
       </SignedIn>
       

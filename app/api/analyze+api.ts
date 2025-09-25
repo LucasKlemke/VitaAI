@@ -8,74 +8,75 @@ export async function POST(req: Request): Promise<Response> {
 
     const model = genAi.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
-    const prompt = `Analyze this food image and provide comprehensive nutritional information in the following JSON format:
+    const prompt = `Analise esta imagem de alimento e forneça informações nutricionais abrangentes no seguinte formato JSON:
 {
   "foodAnalysis": {
-    "identifiedFood": "Name and detailed description",
-    "foodCategory": "Main food category (e.g., Fruits, Dairy, Grains)",
-    "healthScore": 0-100, // Nutritional quality score
-    "portionSize": "Estimated portion size in grams",
-    "recognizedServingSize": "Standard serving size in grams",
+    "identifiedFood": "Nome e descrição detalhada",
+    "foodCategory": "Categoria principal do alimento (ex: Frutas, Laticínios, Grãos)",
+    "healthScore": 0-100, // Pontuação de qualidade nutricional
+    "portionSize": "Tamanho estimado da porção em gramas",
+    "recognizedServingSize": "Tamanho padrão da porção em gramas",
     "nutritionFacts": {
       "perPortion": {
-        "calories": "Estimated calories",
-        "protein": "Protein in grams",
-        "carbs": "Carbs in grams",
-        "fat": "Fat in grams",
-        "fiber": "Fiber in grams",
-        "sugar": "Sugar in grams",
-        "sodium": "Sodium in mg",
-        "cholesterol": "Cholesterol in mg"
+        "calories": "Calorias estimadas",
+        "protein": "Proteína em gramas",
+        "carbs": "Carboidratos em gramas",
+        "fat": "Gordura em gramas",
+        "fiber": "Fibra em gramas",
+        "sugar": "Açúcar em gramas",
+        "sodium": "Sódio em mg",
+        "cholesterol": "Colesterol em mg"
       },
       "per100g": {
-        "calories": "Calories per 100g",
-        "protein": "Protein per 100g",
-        "carbs": "Carbs per 100g",
-        "fat": "Fat per 100g",
-        "fiber": "Fiber per 100g",
-        "sugar": "Sugar per 100g",
-        "sodium": "Sodium per 100g",
-        "cholesterol": "Cholesterol per 100g"
+        "calories": "Calorias por 100g",
+        "protein": "Proteína por 100g",
+        "carbs": "Carboidratos por 100g",
+        "fat": "Gordura por 100g",
+        "fiber": "Fibra por 100g",
+        "sugar": "Açúcar por 100g",
+        "sodium": "Sódio por 100g",
+        "cholesterol": "Colesterol por 100g"
       },
       "macronutrientDistribution": {
-        "proteinPercentage": "Percentage of calories from protein",
-        "carbsPercentage": "Percentage of calories from carbs",
-        "fatPercentage": "Percentage of calories from fat"
+        "proteinPercentage": "Porcentagem de calorias da proteína",
+        "carbsPercentage": "Porcentagem de calorias dos carboidratos",
+        "fatPercentage": "Porcentagem de calorias da gordura"
       }
     },
     "micronutrients": [
       {
-        "name": "Vitamin A",
-        "amount": "Amount",
-        "dailyValue": "Percentage of daily value"
+        "name": "Vitamina A",
+        "amount": "Quantidade",
+        "dailyValue": "Porcentagem do valor diário"
       }
     ],
     "healthBenefits": [
-      "Key health benefits of this food"
+      "Principais benefícios para a saúde deste alimento"
     ],
     "potentialConcerns": [
-      "Any dietary concerns or allergens"
+      "Quaisquer preocupações dietéticas ou alérgenos"
     ],
     "preparationTips": [
-      "Best ways to prepare for maximum nutrition"
+      "Melhores formas de preparar para máxima nutrição"
     ],
     "storageRecommendations": [
-      "How to properly store this food"
+      "Como armazenar adequadamente este alimento"
     ],
     "sustainabilityInfo": {
-      "carbonFootprint": "Estimated CO2 per serving",
-      "seasonality": "When this food is in season"
+      "carbonFootprint": "Pegada de CO2 estimada por porção",
+      "seasonality": "Quando este alimento está na época"
     }
   }
 }
 
-Additional instructions:
-1. Provide realistic estimates based on scientific nutritional databases
-2. Include at least 3 micronutrients when available
-3. Give specific, actionable health advice
-4. Format all numbers without units in the JSON (e.g., 25 not 25g)
-5. Never return markdown formatting, only pure JSON
-6. For ice cream do not include parfait.
+Instruções adicionais:
+1. Forneça estimativas realistas baseadas em bancos de dados nutricionais científicos
+2. Inclua pelo menos 3 micronutrientes quando disponível
+3. Dê conselhos de saúde específicos e acionáveis
+4. Formate todos os números sem unidades no JSON (ex: 25 não 25g)
+5. Nunca retorne formatação markdown, apenas JSON puro
+6. Para sorvete não inclua parfait.
+7. Responda sempre em português brasileiro.
 `;
 
 

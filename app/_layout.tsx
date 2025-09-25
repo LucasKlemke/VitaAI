@@ -10,6 +10,8 @@ import { analysisAtom } from "@/atoms/analysis";
 import { Toaster } from 'sonner-native';
 import { ClerkProvider } from '@clerk/clerk-expo';
 import { tokenCache } from '@clerk/clerk-expo/token-cache'
+import FixedNavbar from './components/FixedNavbar';
+import { SignedIn, SignedOut } from '@clerk/clerk-expo';
 
 export default function RootLayout() {
     const router = useRouter();
@@ -39,6 +41,8 @@ export default function RootLayout() {
 
                 <Stack>
                     <Stack.Screen name="index" options={{ headerShown: false }} />
+                    <Stack.Screen name="calendar" options={{ headerShown: false }} />
+                    <Stack.Screen name="profile" options={{ headerShown: false }} />
                     <Stack.Screen name="(auth)" options={{headerShown: false}}/>
                     <Stack.Screen
                         name="result"
@@ -54,6 +58,11 @@ export default function RootLayout() {
                         }}
                     />
                 </Stack>
+
+                {/* Fixed Navbar - Only show for authenticated users on main pages */}
+                <SignedIn>
+                    <FixedNavbar />
+                </SignedIn>
             </View>
         </GestureHandlerRootView>
         </ClerkProvider>
