@@ -5,6 +5,7 @@ import { Link, useRouter } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import { LinearGradient } from 'expo-linear-gradient'
 import { BlurView } from 'expo-blur'
+import { createUserProfile } from '@/lib/supabase'
 
 export default function SignUpScreen() {
   const { isLoaded, signUp, setActive } = useSignUp()
@@ -12,6 +13,7 @@ export default function SignUpScreen() {
 
   const [emailAddress, setEmailAddress] = React.useState('')
   const [password, setPassword] = React.useState('')
+  const [fullName, setFullName] = React.useState('')
   const [pendingVerification, setPendingVerification] = React.useState(false)
   const [code, setCode] = React.useState('')
   const [showPassword, setShowPassword] = React.useState(false)
@@ -56,6 +58,21 @@ export default function SignUpScreen() {
       // and redirect the user
       if (signUpAttempt.status === 'complete') {
         await setActive({ session: signUpAttempt.createdSessionId })
+        
+        // Create user profile in Supabase database
+        try {
+          const userId = await createUserProfile(
+            signUpAttempt.createdUserId!,
+            emailAddress,
+            fullName
+          )
+          console.log('User profile created successfully:', userId)
+        } catch (dbError) {
+          console.error('Failed to create user profile in database:', dbError)
+          // Don't block the user flow if database creation fails
+          // They can still use the app, but their data won't be saved
+        }
+        
         router.replace('/')
       } else {
         // If the status is not complete, check why. User may need to
@@ -361,6 +378,39 @@ export default function SignUpScreen() {
 
               {/* Form */}
               <View style={{ gap: 20, marginBottom: 24 }}>
+                {/* Full Name Input */}
+                <View>
+                  <View style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    backgroundColor: 'rgba(255, 255, 255, 0.4)',
+                    borderWidth: 1,
+                    borderColor: 'rgba(255, 255, 255, 0.5)',
+                    borderRadius: 16,
+                    paddingHorizontal: 16,
+                    height: 56,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.05,
+                    shadowRadius: 4,
+                    elevation: 2
+                  }}>
+                    <Ionicons name="person-outline" size={20} color="#6b7280" style={{ marginRight: 12 }} />
+                    <TextInput
+                      style={{ 
+                        flex: 1, 
+                        fontSize: 16,
+                        color: '#1f2937'
+                      }}
+                      value={fullName}
+                      placeholder="nome completo"
+                      placeholderTextColor="#9ca3af"
+                      onChangeText={(name) => setFullName(name)}
+                      autoCapitalize="words"
+                    />
+                  </View>
+                </View>
+
                 {/* Email Input */}
                 <View>
                   <View style={{

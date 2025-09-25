@@ -1,4 +1,4 @@
-import { Text, View, TouchableOpacity, Image } from 'react-native';
+import { Text, View, TouchableOpacity, Image, Dimensions, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { useSetAtom } from 'jotai';
@@ -10,11 +10,37 @@ import AppIcon from '../assets/images/AppIcon.png';
 import { SignedIn, SignedOut, useUser } from '@clerk/clerk-expo'
 import { Link, Redirect } from 'expo-router'
 import SignOutButton from './components/SignOutButton'
+import { supabase, getUserProfile } from '@/lib/supabase'
+import { useEffect, useState } from 'react'
+import { LinearGradient } from 'expo-linear-gradient'
+import { BlurView } from 'expo-blur'
 
 export default function Index() {
   const router = useRouter();
   const setAnalysis = useSetAtom(analysisAtom);
   const { user } = useUser();
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const { width, height } = Dimensions.get('window');
+  
+  console.log(user?.emailAddresses);
+  console.log(user?.id)
+
+  // Fetch user profile from Supabase when component mounts
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (user?.id) {
+        try {
+          const profile = await getUserProfile(user.id);
+          setUserProfile(profile);
+          console.log('User profile from database:', profile);
+        } catch (err) {
+          console.error('Failed to fetch user profile:', err);
+        }
+      }
+    };
+
+    fetchUserProfile();
+  }, [user?.id]);
 
   const captureImage = async (camera = false) => {
     let result: any;
@@ -96,66 +122,290 @@ export default function Index() {
   return (
     <>
       <SignedIn>
-        <View className="flex-1 bg-background justify-center items-center p-6">
-          <Animated.View
-            entering={FadeIn.delay(100)}
-            className="items-center mb-8"
+        <LinearGradient
+          colors={['#f8fafc', '#e2e8f0', '#cbd5e1']}
+          style={{ flex: 1 }}
+        >
+          <ScrollView 
+            contentContainerStyle={{ flexGrow: 1, paddingBottom: 120 }}
+            keyboardShouldPersistTaps="handled"
           >
-            <Text className="text-4xl font-bold text-primary mb-2">Nutri-Scan</Text>
-            <Text className="text-lg text-muted-foreground text-center max-w-[300px]">
-              Snap a photo to analyze your meal's nutritional value
-            </Text>
-          </Animated.View>
+            <View style={{ 
+              flex: 1, 
+              justifyContent: 'center', 
+              padding: 24,
+              position: 'relative'
+            }}>
+              {/* Background Elements */}
+              <View style={{
+                position: 'absolute',
+                top: 50,
+                right: -50,
+                width: 200,
+                height: 200,
+                borderRadius: 100,
+                backgroundColor: 'rgba(255, 165, 0, 0.1)',
+                opacity: 0.6
+              }} />
+              <View style={{
+                position: 'absolute',
+                bottom: 100,
+                left: -30,
+                width: 150,
+                height: 150,
+                borderRadius: 75,
+                backgroundColor: 'rgba(255, 192, 203, 0.1)',
+                opacity: 0.5
+              }} />
+              <View style={{
+                position: 'absolute',
+                top: height * 0.3,
+                left: width * 0.1,
+                width: 100,
+                height: 100,
+                borderRadius: 50,
+                backgroundColor: 'rgba(135, 206, 235, 0.1)',
+                opacity: 0.4
+              }} />
 
-          <Animated.View
-            entering={FadeIn.delay(300)}
-            className="mb-10"
-          >
-            <Image
-              source={AppIcon}
-              className="w-[280px] h-[240px] rounded-2xl shadow-lg shadow-primary/20 border-2 border-primary/10"
-              resizeMode="center"
-            />
-          </Animated.View>
-
-          <View className="w-full gap-5 mb-8">
-            <Animated.View entering={FadeInDown.delay(500)}>
-              <TouchableOpacity
-                className="flex-row items-center justify-center py-5 px-6 rounded-xl bg-primary shadow-lg shadow-primary/30 active:opacity-90 gap-3"
-                onPress={() => captureImage(true)}
-                activeOpacity={0.8}
+              {/* Main Glass Card */}
+              <BlurView
+                intensity={20}
+                tint="light"
+                style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.25)',
+                  borderRadius: 24,
+                  padding: 32,
+                  borderWidth: 1,
+                  borderColor: 'rgba(255, 255, 255, 0.3)',
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 8 },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 24,
+                  elevation: 8
+                }}
               >
-                <Ionicons name="camera" size={24} color="hsl(var(--primary-foreground))" />
-                <Text className="text-primary-foreground text-lg font-semibold">Take Photo</Text>
-              </TouchableOpacity>
-            </Animated.View>
+                {/* Header */}
+                <Animated.View 
+                  entering={FadeIn.delay(100)}
+                  style={{ alignItems: 'center', marginBottom: 32 }}
+                >
+                  <View style={{
+                    width: 60,
+                    height: 60,
+                    borderRadius: 30,
+                    backgroundColor: 'rgba(255, 165, 0, 0.2)',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: 16,
+                    borderWidth: 1,
+                    borderColor: 'rgba(255, 255, 255, 0.3)'
+                  }}>
+                    <Ionicons name="leaf" size={28} color="#ff6b35" />
+                  </View>
+                  <Text style={{ 
+                    fontSize: 24, 
+                    fontWeight: 'bold', 
+                    color: '#1f2937',
+                    marginBottom: 8
+                  }}>
+                    Vita.AI
+                  </Text>
+                  <Text style={{ 
+                    fontSize: 18, 
+                    fontWeight: '600', 
+                    color: '#374151',
+                    marginBottom: 4
+                  }}>
+                    Análise Nutricional
+                  </Text>
+                  <Text style={{ 
+                    fontSize: 14, 
+                    color: '#6b7280',
+                    textAlign: 'center',
+                    marginBottom: 16
+                  }}>
+                    Tire uma foto para analisar o valor nutricional da sua refeição
+                  </Text>
+                  
+                  {/* User Profile Display */}
+                  {userProfile && (
+                    <View style={{
+                      backgroundColor: 'rgba(255, 255, 255, 0.4)',
+                      borderRadius: 16,
+                      padding: 16,
+                      borderWidth: 1,
+                      borderColor: 'rgba(255, 255, 255, 0.5)',
+                      marginBottom: 16,
+                      width: '100%'
+                    }}>
+                      <Text style={{ 
+                        fontSize: 16, 
+                        fontWeight: '600', 
+                        color: '#1f2937',
+                        textAlign: 'center',
+                        marginBottom: 4
+                      }}>
+                        Bem-vindo, {userProfile.full_name || userProfile.email}!
+                      </Text>
+                      <Text style={{ 
+                        fontSize: 12, 
+                        color: '#6b7280',
+                        textAlign: 'center'
+                      }}>
+                        Pronto para analisar sua próxima refeição
+                      </Text>
+                    </View>
+                  )}
+                </Animated.View>
 
-            <Animated.View entering={FadeInDown.delay(700)}>
-              <TouchableOpacity
-                className="flex-row items-center justify-center py-5 px-6 rounded-xl bg-accent shadow-lg shadow-accent/30 active:opacity-90 gap-3"
-                onPress={() => captureImage(false)}
-                activeOpacity={0.8}
-              >
-                <MaterialIcons name="photo-library" size={24} color="hsl(var(--accent-foreground))" />
-                <Text className="text-accent-foreground text-lg font-semibold">Choose from Gallery</Text>
-              </TouchableOpacity>
-            </Animated.View>
-          </View>
+                {/* App Icon */}
+                <Animated.View
+                  entering={FadeIn.delay(300)}
+                  style={{ alignItems: 'center', marginBottom: 32 }}
+                >
+                  <View style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                    borderRadius: 20,
+                    padding: 16,
+                    borderWidth: 1,
+                    borderColor: 'rgba(255, 255, 255, 0.4)',
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.1,
+                    shadowRadius: 8,
+                    elevation: 4
+                  }}>
+                    <Image
+                      source={AppIcon}
+                      style={{
+                        width: 200,
+                        height: 160,
+                        borderRadius: 16
+                      }}
+                      resizeMode="contain"
+                    />
+                  </View>
+                </Animated.View>
 
-          <Animated.View
-            entering={FadeIn.delay(900)}
-            className="absolute bottom-8"
+                {/* Action Buttons */}
+                <View style={{ gap: 16, marginBottom: 24 }}>
+                  <Animated.View entering={FadeInDown.delay(500)}>
+                    <TouchableOpacity
+                      style={{
+                        backgroundColor: '#ff6b35',
+                        height: 56,
+                        borderRadius: 28,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        shadowColor: '#ff6b35',
+                        shadowOffset: { width: 0, height: 4 },
+                        shadowOpacity: 0.3,
+                        shadowRadius: 8,
+                        elevation: 6,
+                        flexDirection: 'row'
+                      }}
+                      onPress={() => captureImage(true)}
+                      activeOpacity={0.9}
+                    >
+                      <Ionicons name="camera" size={24} color="white" style={{ marginRight: 12 }} />
+                      <Text style={{ 
+                        color: 'white', 
+                        fontSize: 16, 
+                        fontWeight: '600'
+                      }}>
+                        Tirar Foto
+                      </Text>
+                    </TouchableOpacity>
+                  </Animated.View>
+
+                  <Animated.View entering={FadeInDown.delay(700)}>
+                    <TouchableOpacity
+                      style={{
+                        backgroundColor: 'rgba(255, 255, 255, 0.4)',
+                        height: 56,
+                        borderRadius: 28,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderWidth: 1,
+                        borderColor: 'rgba(255, 255, 255, 0.5)',
+                        shadowColor: '#000',
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: 0.1,
+                        shadowRadius: 4,
+                        elevation: 2,
+                        flexDirection: 'row'
+                      }}
+                      onPress={() => captureImage(false)}
+                      activeOpacity={0.9}
+                    >
+                      <MaterialIcons name="photo-library" size={24} color="#ff6b35" style={{ marginRight: 12 }} />
+                      <Text style={{ 
+                        color: '#ff6b35', 
+                        fontSize: 16, 
+                        fontWeight: '600'
+                      }}>
+                        Escolher da Galeria
+                      </Text>
+                    </TouchableOpacity>
+                  </Animated.View>
+                </View>
+
+                {/* Footer */}
+                <Animated.View
+                  entering={FadeIn.delay(900)}
+                  style={{ alignItems: 'center' }}
+                >
+                  <Text style={{ 
+                    fontSize: 12, 
+                    color: '#6b7280',
+                    textAlign: 'center'
+                  }}>
+                    Powered by <Text style={{ color: '#ff6b35', fontWeight: '600' }}>Gemini-AI</Text>
+                  </Text>
+                </Animated.View>
+              </BlurView>
+
+            </View>
+          </ScrollView>
+
+          {/* Bottom Navigation Bar */}
+          <BlurView
+            intensity={20}
+            tint="light"
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              backgroundColor: 'rgba(255, 255, 255, 0.25)',
+              borderTopWidth: 1,
+              borderTopColor: 'rgba(255, 255, 255, 0.3)',
+              paddingTop: 16,
+              paddingBottom: 32,
+              paddingHorizontal: 24,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: -4 },
+              shadowOpacity: 0.1,
+              shadowRadius: 8,
+              elevation: 8
+            }}
           >
-            <Text className="text-sm text-muted-foreground">
-              Powered by <Text className="text-primary">Gemini-AI</Text>
-            </Text>
-          </Animated.View>
+            <View style={{ 
+              flexDirection: 'row', 
+              gap: 12,
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}>
 
-          {/* Sign Out Button */}
-          <View className="absolute top-12 right-6">
-            <SignOutButton />
-          </View>
-        </View>
+              {/* Sign Out Button */}
+              <Animated.View entering={FadeInDown.delay(900)}>
+             
+                  <SignOutButton />
+              </Animated.View>
+            </View>
+          </BlurView>
+        </LinearGradient>
       </SignedIn>
       
       <SignedOut>
