@@ -60,3 +60,6 @@ interface FoodAnalysis {
 }
 
 export const analysisAtom = atom<FoodAnalysis | null>(null);
+
+// Atom to trigger refresh of dashboard data
+export const refreshTriggerAtom = atom(0);

@@ -1,8 +1,8 @@
 import { Dimensions, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
-import { useSetAtom } from 'jotai';
-import { analysisAtom } from '@/atoms/analysis';
+import { useSetAtom, useAtomValue } from 'jotai';
+import { analysisAtom, refreshTriggerAtom } from '@/atoms/analysis';
 import { toast } from 'sonner-native';
 import { SignedIn, SignedOut, useUser } from '@clerk/clerk-expo'
 import { Redirect } from 'expo-router'
@@ -25,6 +25,7 @@ export default function Index() {
     meals: 0
   });
   const [loadingNutrition, setLoadingNutrition] = useState(true);
+  const refreshTrigger = useAtomValue(refreshTriggerAtom);
   const { width, height } = Dimensions.get('window');
 
   // Fetch user profile from Supabase when component mounts
@@ -69,7 +70,7 @@ export default function Index() {
     };
 
     fetchTodayNutrition();
-  }, [userProfile?.id]);
+  }, [userProfile?.id, refreshTrigger]);
 
   const captureImage = async (camera = false) => {
     let result: any;
@@ -197,6 +198,7 @@ export default function Index() {
               loadingNutrition={loadingNutrition}
               onCameraPress={() => captureImage(true)}
               onGalleryPress={() => captureImage(false)}
+              refreshTrigger={refreshTrigger}
             />
           </ScrollView>
         </LinearGradient>

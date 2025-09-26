@@ -15,9 +15,10 @@ interface FoodEntry {
 
 interface RecentEntriesProps {
   userId: string;
+  refreshTrigger?: number;
 }
 
-export default function RecentEntries({ userId }: RecentEntriesProps) {
+export default function RecentEntries({ userId, refreshTrigger }: RecentEntriesProps) {
   const [entries, setEntries] = useState<FoodEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -40,7 +41,7 @@ export default function RecentEntries({ userId }: RecentEntriesProps) {
     if (userId) {
       fetchTodayEntries();
     }
-  }, [userId]);
+  }, [userId, refreshTrigger]);
 
   const formatTime = (timeString: string) => {
     try {

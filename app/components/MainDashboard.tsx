@@ -21,6 +21,7 @@ interface MainDashboardProps {
   loadingNutrition?: boolean;
   onCameraPress: () => void;
   onGalleryPress: () => void;
+  refreshTrigger?: number;
 }
 
 export default function MainDashboard({ 
@@ -31,7 +32,8 @@ export default function MainDashboard({
   dailyNutrition, 
   loadingNutrition = false,
   onCameraPress, 
-  onGalleryPress 
+  onGalleryPress,
+  refreshTrigger
 }: MainDashboardProps) {
   // Loading skeleton components
   const LoadingSkeleton = () => (
@@ -180,7 +182,7 @@ export default function MainDashboard({
         }}
       />
 
-      <RecentEntries userId={userId} />
+      <RecentEntries userId={userId} refreshTrigger={refreshTrigger} />
     </View>
   );
 }

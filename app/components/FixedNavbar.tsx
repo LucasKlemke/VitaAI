@@ -5,7 +5,7 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import { BlurView } from 'expo-blur';
 import * as ImagePicker from 'expo-image-picker';
 import { useSetAtom } from 'jotai';
-import { analysisAtom } from '@/atoms/analysis';
+import { analysisAtom, refreshTriggerAtom } from '@/atoms/analysis';
 import { toast } from 'sonner-native';
 import { useUser } from '@clerk/clerk-expo';
 import { getUserProfile } from '@/lib/queries/userQueries';
@@ -16,6 +16,7 @@ export default function FixedNavbar() {
   const router = useRouter();
   const pathname = usePathname();
   const setAnalysis = useSetAtom(analysisAtom);
+  const setRefreshTrigger = useSetAtom(refreshTriggerAtom);
   const { user } = useUser();
   const [userProfile, setUserProfile] = useState<any>(null);
 
@@ -104,6 +105,9 @@ export default function FixedNavbar() {
                     data.mealType
                   );
                   console.log('Food entry saved successfully:', savedEntry.id);
+                  
+                  // Trigger refresh of dashboard data
+                  setRefreshTrigger(prev => prev + 1);
                 } catch (saveError) {
                   console.error('Failed to save food entry:', saveError);
                 }
