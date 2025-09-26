@@ -1,44 +1,4 @@
-# NutriScan: AI-Powered Food Analysis App
-
-## Overview
-NutriScan is a modern, AI-powered food analysis application built with React Native and Expo. It leverages Google's Gemini AI to help users track their nutritional intake more efficiently through advanced image recognition and natural language processing. The app provides instant nutritional analysis of food items through photos, making calorie and nutrient tracking effortless and accurate.
-
-## Table of Contents
-1. [Features](#features)
-2. [Technology Stack](#technology-stack)
-3. [Getting Started](#getting-started)
-4. [Project Structure](#project-structure)
-5. [Development](#development)
-6. [Testing](#testing)
-7. [Contributing](#contributing)
-
-## Features
-- 🚀 Instant food recognition through AI image analysis
-- 📊 Comprehensive nutritional breakdown:
-    - Calories and macronutrients
-    - Micronutrients (Vitamins/Minerals)
-    - Portion vs. 100g comparisons
-    - Health impact assessment
-- 📱 Cross-platform compatibility (iOS, Android, Web)
-- 🎨 Modern UI with:
-    - Animated transitions
-    - Interactive nutrition cards
-    - Visual health scoring
-- 🔔 Real-time feedback with toast notifications
-
-## Technology Stack
-- **Frontend Framework**: React Native (v0.76.9)
-- **Development Platform**: Expo (v52.0.40)
-- **State Management**: Jotai (v2.12.2)
-- **Navigation**: Expo Router (v4.0.19)
-- **AI Integration**: Google Generative AI (Gemini-2.0-flash)
-- **UI Components**: 
-  - Expo Blur
-  - Expo Image Picker
-  - React Native Reanimated
-  - React Native Gesture Handler
-  - Linear Gradient
-  - Toast notifications for analysis status
+# VITA AI: Intelligent Nutrition & Health Tracking
 
 ## Getting Started
 
@@ -47,13 +7,15 @@ NutriScan is a modern, AI-powered food analysis application built with React Nat
 - npm or yarn
 - Expo CLI
 - Google Gemini API key
+- Clerk account for authentication
+- Supabase account for database
 - iOS Simulator or Android Emulator (for mobile development)
 
 ### Installation
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/nutriscan.git
-   cd nutriscan
+   git clone https://github.com/yourusername/vita-ai.git
+   cd vita-ai
    ```
 
 2. Install dependencies:
@@ -64,13 +26,60 @@ NutriScan is a modern, AI-powered food analysis application built with React Nat
    ```
 
 3. Set up environment variables:
+
    ```bash
-   cp DUMMY.env .env
+   cp .env.example .env
    ```
-   Add your Gemini API key to the .env file:
+   Add your API keys to the .env file:
    ```
-   EXPO_PUBLIC_GEMINI_API_KEY=your_api_key_here
+   EXPO_PUBLIC_GEMINI_API_KEY=your_gemini_api_key_here
+   EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key_here
+   EXPO_PUBLIC_SUPABASE_URL=your_supabase_url_here
+   EXPO_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key_here
    ```
+
+### Getting API Keys
+
+#### Google Gemini API Key
+1. Go to [Google AI Studio](https://aistudio.google.com/)
+2. Sign in with your Google account
+3. Click "Get API Key" in the left sidebar
+4. Create a new API key or use an existing one
+5. Copy the API key and add it to your `.env` file as `EXPO_PUBLIC_GEMINI_API_KEY`
+
+#### Clerk Authentication Keys
+1. Go to [Clerk Dashboard](https://dashboard.clerk.com/)
+2. Sign up or sign in to your account
+3. Create a new application or select an existing one
+4. Go to "API Keys" in the left sidebar
+5. Copy the "Publishable key" and add it to your `.env` file as `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY`
+6. Optionally, copy the "Secret key" for server-side operations (not needed for this client-side app)
+
+#### Supabase Database Keys
+1. Go to [Supabase Dashboard](https://supabase.com/dashboard)
+2. Sign up or sign in to your account
+3. Create a new project or select an existing one
+4. Go to "Settings" → "API" in the left sidebar
+5. Copy the "Project URL" and add it to your `.env` file as `EXPO_PUBLIC_SUPABASE_URL`
+6. Copy the "anon public" key and add it to your `.env` file as `EXPO_PUBLIC_SUPABASE_ANON_KEY`
+
+### Database Setup
+
+After obtaining your Supabase credentials, you need to set up the database schema:
+
+1. In your Supabase project dashboard, go to "SQL Editor" in the left sidebar
+2. Click "New query" to create a new SQL query
+3. Copy the entire contents of the `schema.sql` file from this repository
+4. Paste the SQL code into the query editor
+5. Click "Run" to execute the schema and create all necessary tables
+
+The schema will create the following tables:
+- `profiles` - User profile information linked to Clerk authentication
+- `food_entries` - Main table for logged food items
+- `macronutrients` - Nutritional macro data (calories, protein, carbs, fats)
+- `micronutrients` - Vitamin and mineral data
+
+**Important**: Make sure to run the complete `schema.sql` file to ensure all tables, relationships, and constraints are properly created.
 
 4. Start the development server:
    ```bash
@@ -81,7 +90,7 @@ NutriScan is a modern, AI-powered food analysis application built with React Nat
 
 ## Project Structure
 ```
-nutriscan/
+vita-ai/
 ├── app/                  # Main application code
 │   ├── api/             # API integration with Gemini AI
 │   │   └── analyze+api.ts # Food analysis endpoint
@@ -91,11 +100,17 @@ nutriscan/
 │   ├── _layout.tsx      # Layout configuration
 │   ├── index.tsx        # Main camera/gallery interface
 │   └── result.tsx       # Analysis results display
-├── assets/              # Static assets and response templates
-├── atoms/               # Jotai atoms for state management
-│   └── analysis.ts      # Analysis state management
-├── components/          # Reusable components
-└── expo-env.d.ts        # TypeScript declarations
+├── assets/                 # Static assets and images
+├── atoms/                  # Jotai atoms for state management
+│   └── analysis.ts         # Analysis state management
+├── lib/                    # Utility libraries
+│   ├── queries/            # Database queries
+│   │   ├── foodQueries.ts  # Food-related queries
+│   │   ├── nutritionQueries.ts
+│   │   └── userQueries.ts  # User-related queries
+│   └── supabase.ts         # Supabase client configuration
+├── schema.sql              # Database schema
+└── expo-env.d.ts           # TypeScript declarations
 ```
 
 ## Development
@@ -108,30 +123,3 @@ nutriscan/
 - `npm test` - Run tests
 - `npm run lint` - Run linting
 - `npm run reset-project` - Reset project configuration
-
-### Key Features Implementation
-- **Image Capture**: Uses Expo ImagePicker for camera and gallery access
-- **AI Analysis**: Integrates with Gemini AI for food recognition and nutritional analysis
-- **Results Display**: Animated collapsible sections showing detailed nutritional information
-- **State Management**: Jotai for efficient state handling across components
-
-## Testing
-The project uses Jest for testing. Run tests using:
-```bash
-npm test
-```
-
-## Contributing
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## License
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Acknowledgments
-- Google Gemini AI team for the powerful image analysis capabilities
-- Expo team for the excellent development platform
-- React Native community for continuous support
