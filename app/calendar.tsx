@@ -13,7 +13,6 @@ import { getUserProfile } from '../lib/queries/userQueries'
 export default function Calendar() {
   const router = useRouter();
   const { user } = useUser();
-  const [selectedDay, setSelectedDay] = useState<any>(null);
   const [daysWithMeals, setDaysWithMeals] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -126,21 +125,6 @@ export default function Calendar() {
                   marginBottom: 24 
                 }}
               >
-                <TouchableOpacity
-                  onPress={() => router.back()}
-                  style={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: 20,
-                    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    marginRight: 16
-                  }}
-                >
-                  <Ionicons name="arrow-back" size={20} color="#374151" />
-                </TouchableOpacity>
-                
                 <View style={{ flex: 1 }}>
                   <Text style={{ 
                     fontSize: 28, 
@@ -302,7 +286,10 @@ export default function Calendar() {
                             borderWidth: day.hasData ? 1 : 0,
                             borderColor: day.hasData ? '#ff6b35' : 'transparent'
                           }}
-                          onPress={() => day.hasData && setSelectedDay(day.data)}
+                          onPress={() => day.hasData && router.push({
+                            pathname: '/day-detail',
+                            params: { date: day.dateString }
+                          })}
                           disabled={!day.hasData}
                           activeOpacity={0.7}
                         >
@@ -333,143 +320,6 @@ export default function Calendar() {
                 )}
               </BlurView>
 
-              {/* Selected Day Summary */}
-              {selectedDay && (
-                <Animated.View
-                  entering={FadeInDown}
-                  style={{
-                    backgroundColor: 'rgba(255, 255, 255, 0.25)',
-                    borderRadius: 20,
-                    padding: 20,
-                    borderWidth: 1,
-                    borderColor: 'rgba(255, 255, 255, 0.3)',
-                    shadowColor: '#000',
-                    shadowOffset: { width: 0, height: 4 },
-                    shadowOpacity: 0.1,
-                    shadowRadius: 8,
-                    elevation: 4
-                  }}
-                >
-                  <View style={{ 
-                    flexDirection: 'row', 
-                    justifyContent: 'space-between', 
-                    alignItems: 'center',
-                    marginBottom: 16 
-                  }}>
-                    <Text style={{ 
-                      fontSize: 20, 
-                      fontWeight: 'bold', 
-                      color: '#1f2937'
-                    }}>
-                      Resumo do Dia
-                    </Text>
-                    <TouchableOpacity
-                      onPress={() => setSelectedDay(null)}
-                      style={{
-                        width: 32,
-                        height: 32,
-                        borderRadius: 16,
-                        backgroundColor: 'rgba(107, 114, 128, 0.2)',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                      }}
-                    >
-                      <Ionicons name="close" size={16} color="#6b7280" />
-                    </TouchableOpacity>
-                  </View>
-
-                  <View style={{ alignItems: 'center', marginBottom: 16 }}>
-                    <Text style={{ 
-                      fontSize: 32, 
-                      fontWeight: 'bold', 
-                      color: '#ff6b35',
-                      marginBottom: 4
-                    }}>
-                      {Math.round(selectedDay.calories)}
-                    </Text>
-                    <Text style={{ 
-                      fontSize: 14, 
-                      color: '#6b7280'
-                    }}>
-                      calorias de {selectedDay.meals} refeições
-                    </Text>
-                  </View>
-
-                  <View style={{ 
-                    flexDirection: 'row', 
-                    gap: 12 
-                  }}>
-                    <View style={{
-                      flex: 1,
-                      backgroundColor: 'rgba(255, 255, 255, 0.3)',
-                      borderRadius: 12,
-                      padding: 12,
-                      alignItems: 'center'
-                    }}>
-                      <Text style={{ 
-                        fontSize: 18, 
-                        fontWeight: 'bold', 
-                        color: '#1f2937',
-                        marginBottom: 2
-                      }}>
-                        {Math.round(selectedDay.protein)}g
-                      </Text>
-                      <Text style={{ 
-                        fontSize: 12, 
-                        color: '#6b7280'
-                      }}>
-                        Proteína
-                      </Text>
-                    </View>
-
-                    <View style={{
-                      flex: 1,
-                      backgroundColor: 'rgba(255, 255, 255, 0.3)',
-                      borderRadius: 12,
-                      padding: 12,
-                      alignItems: 'center'
-                    }}>
-                      <Text style={{ 
-                        fontSize: 18, 
-                        fontWeight: 'bold', 
-                        color: '#1f2937',
-                        marginBottom: 2
-                      }}>
-                        {Math.round(selectedDay.fat)}g
-                      </Text>
-                      <Text style={{ 
-                        fontSize: 12, 
-                        color: '#6b7280'
-                      }}>
-                        Gordura
-                      </Text>
-                    </View>
-
-                    <View style={{
-                      flex: 1,
-                      backgroundColor: 'rgba(255, 255, 255, 0.3)',
-                      borderRadius: 12,
-                      padding: 12,
-                      alignItems: 'center'
-                    }}>
-                      <Text style={{ 
-                        fontSize: 18, 
-                        fontWeight: 'bold', 
-                        color: '#1f2937',
-                        marginBottom: 2
-                      }}>
-                        {Math.round(selectedDay.carbs)}g
-                      </Text>
-                      <Text style={{ 
-                        fontSize: 12, 
-                        color: '#6b7280'
-                      }}>
-                        Carboidrato
-                      </Text>
-                    </View>
-                  </View>
-                </Animated.View>
-              )}
 
               {/* Legend */}
               <View style={{
