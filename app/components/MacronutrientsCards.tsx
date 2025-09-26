@@ -97,14 +97,14 @@ export default function MacronutrientsCards({ macronutrients }: MacronutrientsCa
           {macronutrients.protein}g
         </Text>
         <Text style={{ 
-          fontSize: 12, 
+          fontSize: 10, 
           color: '#6b7280',
           textAlign: 'left',
           marginBottom: 12,
           fontWeight: '500',
           alignSelf: 'flex-start'
         }}>
-          Protein
+          Proteína
         </Text>
         {createProgressCircle(proteinProgress, '#3b82f6', 'fitness')}
       </View>
@@ -132,14 +132,14 @@ export default function MacronutrientsCards({ macronutrients }: MacronutrientsCa
           {macronutrients.carbs}g
         </Text>
         <Text style={{ 
-          fontSize: 12, 
+          fontSize: 10, 
           color: '#6b7280',
           textAlign: 'left',
           marginBottom: 12,
           fontWeight: '500',
           alignSelf: 'flex-start'
         }}>
-          Carbs
+          Carboidrato
         </Text>
         {createProgressCircle(carbsProgress, '#10b981', 'flash')}
       </View>
@@ -167,14 +167,14 @@ export default function MacronutrientsCards({ macronutrients }: MacronutrientsCa
           {macronutrients.fat}g
         </Text>
         <Text style={{ 
-          fontSize: 12, 
+          fontSize: 10, 
           color: '#6b7280',
           textAlign: 'left',
           marginBottom: 12,
           fontWeight: '500',
           alignSelf: 'flex-start'
         }}>
-          Fat
+          Gordura
         </Text>
         {createProgressCircle(fatProgress, '#f59e0b', 'water')}
       </View>

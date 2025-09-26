@@ -300,6 +300,38 @@ export const getDailyNutritionSummaryAlternative = async (userId: string, startD
   }
 };
 
+// Function to get today's food entries for recent entries section
+export const getTodayFoodEntries = async (userId: string) => {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    
+    const { data, error } = await supabase
+      .from('food_entries')
+      .select(`
+        id,
+        food_name,
+        meal_type,
+        time,
+        macronutrients(
+          calories
+        )
+      `)
+      .eq('user_id', userId)
+      .eq('date', today)
+      .order('time', { ascending: false }); // Most recent first
+
+    if (error) {
+      console.error('Error fetching today food entries:', error);
+      throw error;
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Failed to fetch today food entries:', error);
+    throw error;
+  }
+};
+
 // Function to get today's nutrition summary for dashboard
 export const getTodayNutritionSummary = async (userId: string) => {
   try {

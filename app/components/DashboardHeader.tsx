@@ -70,7 +70,7 @@ export default function DashboardHeader({ userName, dailyNutrition }: DashboardH
               color: '#6b7280',
               fontWeight: '500'
             }}>
-              Total calories
+              Total calorias
             </Text>
           </View>
 

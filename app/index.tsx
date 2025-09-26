@@ -192,6 +192,7 @@ export default function Index() {
               width={width}
               height={height}
               userName={userProfile?.full_name || user?.firstName || 'Usuário'}
+              userId={userProfile?.id || ''}
               dailyNutrition={dailyNutrition}
               loadingNutrition={loadingNutrition}
               onCameraPress={() => captureImage(true)}

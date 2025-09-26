@@ -1,6 +1,7 @@
-import { View, Text, ActivityIndicator, Image, ScrollView } from 'react-native';
+import { View, Text, Image } from 'react-native';
 import DashboardHeader from './DashboardHeader';
 import MacronutrientsCards from './MacronutrientsCards';
+import RecentEntries from './RecentEntries';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
 interface DailyNutrition {
@@ -15,6 +16,7 @@ interface MainDashboardProps {
   width: number;
   height: number;
   userName: string;
+  userId: string;
   dailyNutrition: DailyNutrition;
   loadingNutrition?: boolean;
   onCameraPress: () => void;
@@ -25,6 +27,7 @@ export default function MainDashboard({
   width, 
   height, 
   userName, 
+  userId,
   dailyNutrition, 
   loadingNutrition = false,
   onCameraPress, 
@@ -177,71 +180,7 @@ export default function MainDashboard({
         }}
       />
 
-      {/* Recent Entries (Mocked) */}
-      <ScrollView style={{
-        backgroundColor: 'white',
-        borderRadius: 16,
-        padding: 18,
-        marginTop: 8,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.07,
-        shadowRadius: 8,
-        elevation: 2
-      }}>
-        <Text style={{
-          fontSize: 18,
-          fontWeight: '600',
-          color: '#1f2937',
-          marginBottom: 12
-        }}>
-          Recentes
-        </Text>
-        {/* Mocked list of recent entries */}
-        <View>
-          {[
-            {
-              id: 1,
-              food: 'Grilled Chicken Salad',
-              calories: 350,
-              time: 'Hoje, 12:30 PM'
-            },
-            {
-              id: 2,
-              food: 'Oatmeal with Berries',
-              calories: 220,
-              time: 'Hoje, 8:10 AM'
-            },
-            {
-              id: 3,
-              food: 'Greek Yogurt',
-              calories: 120,
-              time: 'Yesterday, 9:00 PM'
-            }
-          ].map(entry => (
-            <View key={entry.id} style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              paddingVertical: 8,
-              borderBottomWidth: entry.id !== 3 ? 1 : 0,
-              borderBottomColor: '#f1f5f9'
-            }}>
-              <View>
-                <Text style={{ fontSize: 15, color: '#334155', fontWeight: '500' }}>
-                  {entry.food}
-                </Text>
-                <Text style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>
-                  {entry.time}
-                </Text>
-              </View>
-              <Text style={{ fontSize: 15, color: '#ff6b35', fontWeight: '600' }}>
-                {entry.calories} kcal
-              </Text>
-            </View>
-          ))}
-        </View>
-      </ScrollView>
+      <RecentEntries userId={userId} />
     </View>
   );
 }
