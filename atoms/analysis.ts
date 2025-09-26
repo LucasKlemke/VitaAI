@@ -63,3 +63,9 @@ export const analysisAtom = atom<FoodAnalysis | null>(null);
 
 // Atom to trigger refresh of dashboard data
 export const refreshTriggerAtom = atom(0);
+
+// User profile atom to cache user data globally
+export const userProfileAtom = atom<any>(null);
+
+// Atom to track if user profile is being loaded
+export const userProfileLoadingAtom = atom(false);

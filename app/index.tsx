@@ -2,7 +2,7 @@ import { Dimensions, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { useSetAtom, useAtomValue } from 'jotai';
-import { analysisAtom, refreshTriggerAtom } from '@/atoms/analysis';
+import { analysisAtom, refreshTriggerAtom, userProfileAtom, userProfileLoadingAtom } from '@/atoms/analysis';
 import { toast } from 'sonner-native';
 import { SignedIn, SignedOut, useUser } from '@clerk/clerk-expo'
 import { Redirect } from 'expo-router'
@@ -15,8 +15,11 @@ import MainDashboard from './components/MainDashboard';
 export default function Index() {
   const router = useRouter();
   const setAnalysis = useSetAtom(analysisAtom);
+  const setUserProfile = useSetAtom(userProfileAtom);
+  const setUserProfileLoading = useSetAtom(userProfileLoadingAtom);
+  const userProfile = useAtomValue(userProfileAtom);
+  const userProfileLoading = useAtomValue(userProfileLoadingAtom);
   const { user } = useUser();
-  const [userProfile, setUserProfile] = useState<any>(null);
   const [dailyNutrition, setDailyNutrition] = useState({
     calories: 0,
     protein: 0,
@@ -24,26 +27,29 @@ export default function Index() {
     carbs: 0,
     meals: 0
   });
-  const [loadingNutrition, setLoadingNutrition] = useState(true);
+  const [loadingNutrition, setLoadingNutrition] = useState(false);
   const refreshTrigger = useAtomValue(refreshTriggerAtom);
   const { width, height } = Dimensions.get('window');
 
-  // Fetch user profile from Supabase when component mounts
+  // Fetch user profile from Supabase when component mounts (only if not already loaded)
   useEffect(() => {
     const fetchUserProfile = async () => {
-      if (user?.id) {
+      if (user?.id && !userProfile && !userProfileLoading) {
+        setUserProfileLoading(true);
         try {
           const profile = await getUserProfile(user.id);
           setUserProfile(profile);
           console.log('User profile from database:', profile);
         } catch (err) {
           console.error('Failed to fetch user profile:', err);
+        } finally {
+          setUserProfileLoading(false);
         }
       }
     };
 
     fetchUserProfile();
-  }, [user?.id]);
+  }, [user?.id, userProfile, userProfileLoading, setUserProfile, setUserProfileLoading]);
 
   // Fetch today's nutrition data
   useEffect(() => {
@@ -69,8 +75,11 @@ export default function Index() {
       }
     };
 
-    fetchTodayNutrition();
-  }, [userProfile?.id, refreshTrigger]);
+    // Only fetch nutrition data if user profile is loaded and not currently loading
+    if (userProfile && !userProfileLoading) {
+      fetchTodayNutrition();
+    }
+  }, [userProfile?.id, refreshTrigger, userProfileLoading]);
 
   const captureImage = async (camera = false) => {
     let result: any;
@@ -195,7 +204,7 @@ export default function Index() {
               userName={userProfile?.full_name || user?.firstName || 'Usuário'}
               userId={userProfile?.id || ''}
               dailyNutrition={dailyNutrition}
-              loadingNutrition={loadingNutrition}
+              loadingNutrition={loadingNutrition || userProfileLoading}
               onCameraPress={() => captureImage(true)}
               onGalleryPress={() => captureImage(false)}
               refreshTrigger={refreshTrigger}

@@ -6,29 +6,37 @@ import { SignedIn, SignedOut, useUser } from '@clerk/clerk-expo'
 import { Redirect } from 'expo-router'
 import { useEffect, useState } from 'react'
 import { getUserProfile } from '@/lib/queries/userQueries'
+import { useSetAtom, useAtomValue } from 'jotai';
+import { userProfileAtom, userProfileLoadingAtom } from '@/atoms/analysis';
 import { NameCard, EmailCard, SignOutCard } from './components/profile'
 
 export default function Profile() {
   const router = useRouter();
   const { user } = useUser();
-  const [userProfile, setUserProfile] = useState<any>(null);
+  const setUserProfile = useSetAtom(userProfileAtom);
+  const setUserProfileLoading = useSetAtom(userProfileLoadingAtom);
+  const userProfile = useAtomValue(userProfileAtom);
+  const userProfileLoading = useAtomValue(userProfileLoadingAtom);
 
-  // Fetch user profile from Supabase when component mounts
+  // Fetch user profile from Supabase when component mounts (only if not already loaded)
   useEffect(() => {
     const fetchUserProfile = async () => {
-      if (user?.id) {
+      if (user?.id && !userProfile && !userProfileLoading) {
+        setUserProfileLoading(true);
         try {
           const profile = await getUserProfile(user.id);
           setUserProfile(profile);
           console.log('User profile from database:', profile);
         } catch (err) {
           console.error('Failed to fetch user profile:', err);
+        } finally {
+          setUserProfileLoading(false);
         }
       }
     };
 
     fetchUserProfile();
-  }, [user?.id]);
+  }, [user?.id, userProfile, userProfileLoading, setUserProfile, setUserProfileLoading]);
 
 
   return (

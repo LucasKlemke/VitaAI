@@ -4,8 +4,8 @@ import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { BlurView } from 'expo-blur';
 import * as ImagePicker from 'expo-image-picker';
-import { useSetAtom } from 'jotai';
-import { analysisAtom, refreshTriggerAtom } from '@/atoms/analysis';
+import { useSetAtom, useAtomValue } from 'jotai';
+import { analysisAtom, refreshTriggerAtom, userProfileAtom, userProfileLoadingAtom } from '@/atoms/analysis';
 import { toast } from 'sonner-native';
 import { useUser } from '@clerk/clerk-expo';
 import { getUserProfile } from '@/lib/queries/userQueries';
@@ -17,24 +17,30 @@ export default function FixedNavbar() {
   const pathname = usePathname();
   const setAnalysis = useSetAtom(analysisAtom);
   const setRefreshTrigger = useSetAtom(refreshTriggerAtom);
+  const setUserProfile = useSetAtom(userProfileAtom);
+  const setUserProfileLoading = useSetAtom(userProfileLoadingAtom);
+  const userProfile = useAtomValue(userProfileAtom);
+  const userProfileLoading = useAtomValue(userProfileLoadingAtom);
   const { user } = useUser();
-  const [userProfile, setUserProfile] = useState<any>(null);
 
-  // Fetch user profile from Supabase when component mounts
+  // Fetch user profile from Supabase when component mounts (only if not already loaded)
   useEffect(() => {
     const fetchUserProfile = async () => {
-      if (user?.id) {
+      if (user?.id && !userProfile && !userProfileLoading) {
+        setUserProfileLoading(true);
         try {
           const profile = await getUserProfile(user.id);
           setUserProfile(profile);
         } catch (err) {
           console.error('Failed to fetch user profile:', err);
+        } finally {
+          setUserProfileLoading(false);
         }
       }
     };
 
     fetchUserProfile();
-  }, [user?.id]);
+  }, [user?.id, userProfile, userProfileLoading, setUserProfile, setUserProfileLoading]);
 
   const captureImage = async (camera = false) => {
     let result: any;
