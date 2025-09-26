@@ -344,7 +344,7 @@ export default function RecentEntries({ userId, refreshTrigger }: RecentEntriesP
               }}>
                 {/* Protein */}
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Ionicons name="fitness" size={12} color="#ef4444" />
+                  <Ionicons name="fitness" size={12} color="#3b82f6" />
                   <Text style={{ 
                     fontSize: 10, 
                     color: '#64748b',
@@ -357,7 +357,7 @@ export default function RecentEntries({ userId, refreshTrigger }: RecentEntriesP
                 
                 {/* Carbs */}
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Ionicons name="leaf" size={12} color="#10b981" />
+                  <Ionicons name="flash" size={12} color="#10b981" />
                   <Text style={{ 
                     fontSize: 10, 
                     color: '#64748b',
