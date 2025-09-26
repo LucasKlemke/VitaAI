@@ -133,20 +133,20 @@ export default function FixedNavbar() {
 
   const navItems = [
     {
-      name: 'Home',
+      name: 'Início',
       icon: 'home',
       route: '/',
       isActive: pathname === '/'
     },
     {
-      name: 'Progress',
-      icon: 'bar-chart',
+      name: 'Calendário',
+      icon: 'calendar',
       route: '/calendar',
       isActive: pathname === '/calendar'
     },
     {
-      name: 'Settings',
-      icon: 'settings',
+      name: 'Perfil',
+      icon: 'person',
       route: '/profile',
       isActive: pathname === '/profile'
     }
@@ -230,8 +230,8 @@ export default function FixedNavbar() {
         >
           <TouchableOpacity
             style={{
-              width: 86,
-              height: 86,
+              width: 72,
+              height: 72,
               borderRadius: 40,
               backgroundColor: '#ff6b35',
               justifyContent: 'center',
