@@ -1,4 +1,26 @@
-# VITA AI: Intelligent Nutrition & Health Tracking
+<div align="center">
+  <img src="assets/images/vita-icon-black.png" alt="VITA AI Logo" width="200" height="200">
+  <h1>VITA AI: Intelligent Nutrition & Health Tracking</h1>
+</div>
+
+## About VITA AI
+
+VITA AI is an intelligent nutrition and health tracking application that leverages the power of Google's Gemini AI to provide comprehensive food analysis and nutritional insights. Built with React Native and Expo, VITA AI offers a seamless mobile experience for users who want to understand their dietary habits and make informed health decisions.
+
+### Key Features
+
+- **AI-Powered Food Analysis**: Simply take a photo of your food and let Gemini AI analyze its nutritional content
+- **Comprehensive Nutrition Tracking**: Track macronutrients (calories, protein, carbs, fats) and micronutrients (vitamins, minerals)
+- **Smart Calendar Integration**: Visualize your nutritional intake over time with an intuitive calendar interface
+- **Secure Authentication**: Built-in user authentication with Clerk for secure data management
+- **Cross-Platform**: Works seamlessly on iOS, Android, and web platforms
+
+### How It Works
+
+1. **Capture**: Take a photo of your meal using the built-in camera or select from your gallery
+2. **Analyze**: Our AI processes the image and identifies food items and portions
+3. **Track**: Nutritional data is automatically logged and stored in your personal dashboard
+
 
 ## Getting Started
 
