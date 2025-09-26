@@ -224,15 +224,15 @@ export default function FixedNavbar() {
           entering={FadeInDown.delay(950)}
           style={{
             position: 'absolute',
-            right: 20,
-            top: -20
+            right: 15,
+            top: -50
           }}
         >
           <TouchableOpacity
             style={{
-              width: 56,
-              height: 56,
-              borderRadius: 28,
+              width: 86,
+              height: 86,
+              borderRadius: 40,
               backgroundColor: '#ff6b35',
               justifyContent: 'center',
               alignItems: 'center',
@@ -269,7 +269,7 @@ export default function FixedNavbar() {
           >
             <Ionicons 
               name="add" 
-              size={28} 
+              size={46} 
               color="white" 
             />
           </TouchableOpacity>

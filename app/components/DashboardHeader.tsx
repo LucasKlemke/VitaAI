@@ -1,4 +1,4 @@
-import { Text, View } from 'react-native';
+import { Image, Text, View } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Circle } from 'react-native-svg';
@@ -25,30 +25,26 @@ export default function DashboardHeader({ userName, dailyNutrition }: DashboardH
   return (
     <Animated.View 
       entering={FadeIn.delay(100)}
-      style={{ marginBottom: 24 }}
     >
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 18 }}>
+         <Image source={require('../../assets/images/vita-icon-black.png')} style={{ width: 30, height: 30 }} />
       <Text style={{ 
         fontSize: 28, 
-        fontWeight: 'bold', 
         color: '#1f2937',
-        marginBottom: 8
+        marginLeft: 5
       }}>
-        Olá, {userName}! 👋
+        Vita.AI
       </Text>
-      <Text style={{ 
-        fontSize: 16, 
-        color: '#6b7280',
-        marginBottom: 24
-      }}>
-        Aqui está o seu resumo de hoje
-      </Text>
+      </View>
+     
+
 
       {/* Main Calories Card */}
       <View style={{
         backgroundColor: 'white',
         borderRadius: 16,
         padding: 24,
-        marginBottom: 20,
+        marginBottom: 12,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
@@ -64,7 +60,6 @@ export default function DashboardHeader({ userName, dailyNutrition }: DashboardH
           <View style={{ flex: 1 }}>
             <Text style={{ 
               fontSize: 48, 
-              fontWeight: 'bold', 
               color: '#1f2937',
               marginBottom: 4
             }}>

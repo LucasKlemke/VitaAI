@@ -89,18 +89,20 @@ export default function MacronutrientsCards({ macronutrients }: MacronutrientsCa
       }}>
         <Text style={{ 
           fontSize: 24, 
-          fontWeight: 'bold', 
           color: '#1f2937',
-          marginBottom: 4
+          marginBottom: 4,
+          textAlign: 'left',
+          alignSelf: 'flex-start'
         }}>
           {macronutrients.protein}g
         </Text>
         <Text style={{ 
           fontSize: 12, 
           color: '#6b7280',
-          textAlign: 'center',
+          textAlign: 'left',
           marginBottom: 12,
-          fontWeight: '500'
+          fontWeight: '500',
+          alignSelf: 'flex-start'
         }}>
           Protein
         </Text>
@@ -122,18 +124,20 @@ export default function MacronutrientsCards({ macronutrients }: MacronutrientsCa
       }}>
         <Text style={{ 
           fontSize: 24, 
-          fontWeight: 'bold', 
           color: '#1f2937',
-          marginBottom: 4
+          marginBottom: 4,
+          textAlign: 'left',
+          alignSelf: 'flex-start'
         }}>
           {macronutrients.carbs}g
         </Text>
         <Text style={{ 
           fontSize: 12, 
           color: '#6b7280',
-          textAlign: 'center',
+          textAlign: 'left',
           marginBottom: 12,
-          fontWeight: '500'
+          fontWeight: '500',
+          alignSelf: 'flex-start'
         }}>
           Carbs
         </Text>
@@ -155,18 +159,20 @@ export default function MacronutrientsCards({ macronutrients }: MacronutrientsCa
       }}>
         <Text style={{ 
           fontSize: 24, 
-          fontWeight: 'bold', 
           color: '#1f2937',
-          marginBottom: 4
+          marginBottom: 4,
+          textAlign: 'left',
+          alignSelf: 'flex-start'
         }}>
           {macronutrients.fat}g
         </Text>
         <Text style={{ 
           fontSize: 12, 
           color: '#6b7280',
-          textAlign: 'center',
+          textAlign: 'left',
           marginBottom: 12,
-          fontWeight: '500'
+          fontWeight: '500',
+          alignSelf: 'flex-start'
         }}>
           Fat
         </Text>

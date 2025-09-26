@@ -1,4 +1,4 @@
-import { View, Text, ActivityIndicator } from 'react-native';
+import { View, Text, ActivityIndicator, Image, ScrollView } from 'react-native';
 import DashboardHeader from './DashboardHeader';
 import MacronutrientsCards from './MacronutrientsCards';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
@@ -105,14 +105,16 @@ export default function MainDashboard({
             height: 24,
             backgroundColor: '#e5e7eb',
             borderRadius: 4,
-            marginBottom: 8
+            marginBottom: 8,
+            alignSelf: 'flex-start'
           }} />
           <View style={{
             width: 50,
             height: 12,
             backgroundColor: '#e5e7eb',
             borderRadius: 4,
-            marginBottom: 16
+            marginBottom: 16,
+            alignSelf: 'flex-start'
           }} />
           <View style={{
             width: 50,
@@ -134,21 +136,16 @@ export default function MainDashboard({
         paddingBottom: 24,
         backgroundColor: '#f8fafc'
       }}>
-        <Text style={{ 
-          fontSize: 28, 
-          fontWeight: 'bold', 
-          color: '#1f2937',
-          marginBottom: 8
-        }}>
-          Olá, {userName}! 👋
-        </Text>
-        <Text style={{ 
-          fontSize: 16, 
-          color: '#6b7280',
-          marginBottom: 24
-        }}>
-          Carregando seus dados...
-        </Text>
+         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 18 }}>
+         <Image source={require('../../assets/images/vita-icon-black.png')} style={{ width: 30, height: 30 }} />
+      <Text style={{ 
+        fontSize: 28, 
+        color: '#1f2937',
+        marginLeft: 5
+      }}>
+        Vita.AI
+      </Text>
+      </View>
         
         <LoadingSkeleton />
         <MacronutrientsLoadingSkeleton />
@@ -179,6 +176,72 @@ export default function MainDashboard({
           carbs: dailyNutrition.carbs
         }}
       />
+
+      {/* Recent Entries (Mocked) */}
+      <ScrollView style={{
+        backgroundColor: 'white',
+        borderRadius: 16,
+        padding: 18,
+        marginTop: 8,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.07,
+        shadowRadius: 8,
+        elevation: 2
+      }}>
+        <Text style={{
+          fontSize: 18,
+          fontWeight: '600',
+          color: '#1f2937',
+          marginBottom: 12
+        }}>
+          Recentes
+        </Text>
+        {/* Mocked list of recent entries */}
+        <View>
+          {[
+            {
+              id: 1,
+              food: 'Grilled Chicken Salad',
+              calories: 350,
+              time: 'Hoje, 12:30 PM'
+            },
+            {
+              id: 2,
+              food: 'Oatmeal with Berries',
+              calories: 220,
+              time: 'Hoje, 8:10 AM'
+            },
+            {
+              id: 3,
+              food: 'Greek Yogurt',
+              calories: 120,
+              time: 'Yesterday, 9:00 PM'
+            }
+          ].map(entry => (
+            <View key={entry.id} style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              paddingVertical: 8,
+              borderBottomWidth: entry.id !== 3 ? 1 : 0,
+              borderBottomColor: '#f1f5f9'
+            }}>
+              <View>
+                <Text style={{ fontSize: 15, color: '#334155', fontWeight: '500' }}>
+                  {entry.food}
+                </Text>
+                <Text style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>
+                  {entry.time}
+                </Text>
+              </View>
+              <Text style={{ fontSize: 15, color: '#ff6b35', fontWeight: '600' }}>
+                {entry.calories} kcal
+              </Text>
+            </View>
+          ))}
+        </View>
+      </ScrollView>
     </View>
   );
 }
