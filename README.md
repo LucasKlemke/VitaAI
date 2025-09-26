@@ -21,6 +21,18 @@ VITA AI is an intelligent nutrition and health tracking application that leverag
 2. **Analyze**: Our AI processes the image and identifies food items and portions
 3. **Track**: Nutritional data is automatically logged and stored in your personal dashboard
 
+## Screenshots
+
+<div align="center">
+  <h3>Main Dashboard</h3>
+  <img src="assets/images/home-screenshot.png" alt="VITA AI Home Dashboard" width="300">
+  
+  <h3>Daily Summary</h3>
+  <img src="assets/images/yesterday-summary-screenshot.png" alt="VITA AI Daily Summary" width="300">
+  
+  <h3>Food Analysis</h3>
+  <img src="assets/images/analysys-screenshot.png" alt="VITA AI Food Analysis" width="300">
+</div>
 
 ## Getting Started
 
