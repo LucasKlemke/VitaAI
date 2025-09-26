@@ -1,7 +1,11 @@
-import { View, Text, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { useEffect, useState } from 'react';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
-import { getTodayFoodEntries } from '../../lib/queries/foodQueries';
+import { getTodayFoodEntries, getFoodEntryById, convertFoodEntryToAnalysis } from '../../lib/queries/foodQueries';
+import { useRouter } from 'expo-router';
+import { useSetAtom } from 'jotai';
+import { analysisAtom } from '@/atoms/analysis';
+import { Ionicons } from '@expo/vector-icons';
 
 interface FoodEntry {
   id: string;
@@ -10,6 +14,9 @@ interface FoodEntry {
   time: string;
   macronutrients: {
     calories: number;
+    protein: number;
+    carbohydrates: number;
+    total_fat: number;
   }[];
 }
 
@@ -22,6 +29,8 @@ export default function RecentEntries({ userId, refreshTrigger }: RecentEntriesP
   const [entries, setEntries] = useState<FoodEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
+  const setAnalysis = useSetAtom(analysisAtom);
 
   useEffect(() => {
     const fetchTodayEntries = async () => {
@@ -45,24 +54,38 @@ export default function RecentEntries({ userId, refreshTrigger }: RecentEntriesP
 
   const formatTime = (timeString: string) => {
     try {
-      const date = new Date(timeString);
-      const now = new Date();
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      const entryDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      let date: Date;
       
-      if (entryDate.getTime() === today.getTime()) {
-        return `Hoje, ${date.toLocaleTimeString('pt-BR', { 
-          hour: '2-digit', 
-          minute: '2-digit' 
-        })}`;
+      if (timeString.includes('T')) {
+        // ISO format with date and time
+        date = new Date(timeString);
+      } else if (timeString.includes(':')) {
+        // Time only format - create a date for today with this time
+        const today = new Date();
+        const [hours, minutes, seconds] = timeString.split(':');
+        date = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 
+                       parseInt(hours, 10), parseInt(minutes, 10), parseInt(seconds || '0', 10));
       } else {
-        return date.toLocaleDateString('pt-BR', {
-          day: '2-digit',
-          month: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit'
-        });
+        return 'Horário não disponível';
       }
+      
+      if (isNaN(date.getTime())) {
+        return 'Horário não disponível';
+      }
+      
+      // Convert to Brazil timezone (UTC-3)
+      const brazilTime = new Date(date.getTime() - (3 * 60 * 60 * 1000));
+      
+      // Format time in Brazilian format
+      const formattedTime = brazilTime.toLocaleTimeString('pt-BR', {
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'America/Sao_Paulo'
+      });
+      
+      // Since we're showing today's entries, always show "Hoje"
+      return `Hoje, ${formattedTime}`;
+      
     } catch {
       return 'Horário não disponível';
     }
@@ -76,6 +99,30 @@ export default function RecentEntries({ userId, refreshTrigger }: RecentEntriesP
       snack: 'Lanche'
     };
     return labels[mealType as keyof typeof labels] || 'Refeição';
+  };
+
+  const handleEntryPress = async (entryId: string) => {
+    try {
+      // Fetch full food entry data
+      const foodEntry = await getFoodEntryById(entryId);
+      
+      // Convert to analysis format
+      const analysis = convertFoodEntryToAnalysis(foodEntry);
+      
+      // Set analysis in global state
+      setAnalysis(analysis);
+      
+      // Navigate to result page
+      router.push({
+        pathname: '/result',
+        params: { 
+          imageUri: foodEntry.image_url || '',
+          fromEntry: 'true'
+        }
+      });
+    } catch (error) {
+      console.error('Error fetching food entry:', error);
+    }
   };
 
   const LoadingSkeleton = () => (
@@ -146,7 +193,8 @@ export default function RecentEntries({ userId, refreshTrigger }: RecentEntriesP
         backgroundColor: 'white',
         borderRadius: 16,
         padding: 18,
-        marginTop: 8,
+        marginTop: 4,
+        marginBottom: 32,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.07,
@@ -210,7 +258,8 @@ export default function RecentEntries({ userId, refreshTrigger }: RecentEntriesP
         backgroundColor: 'white',
         borderRadius: 16,
         padding: 18,
-        marginTop: 8,
+        marginTop: 4,
+        marginBottom: 42,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.07,
@@ -229,14 +278,22 @@ export default function RecentEntries({ userId, refreshTrigger }: RecentEntriesP
       
       <ScrollView showsVerticalScrollIndicator={false}>
         {entries.map((entry, index) => (
-          <View key={entry.id} style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            paddingVertical: 8,
-            borderBottomWidth: index !== entries.length - 1 ? 1 : 0,
-            borderBottomColor: '#f1f5f9'
-          }}>
+          <TouchableOpacity
+            key={entry.id}
+            onPress={() => handleEntryPress(entry.id)}
+            activeOpacity={0.7}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              paddingVertical: 12,
+              paddingHorizontal: 4,
+              borderBottomWidth: index !== entries.length - 1 ? 1 : 0,
+              borderBottomColor: '#f1f5f9',
+              borderRadius: 8,
+              marginHorizontal: -4
+            }}
+          >
             <View style={{ flex: 1 }}>
               <Text style={{ 
                 fontSize: 15, 
@@ -269,14 +326,71 @@ export default function RecentEntries({ userId, refreshTrigger }: RecentEntriesP
                 </View>
               </View>
             </View>
-            <Text style={{ 
-              fontSize: 15, 
-              color: '#ff6b35', 
-              fontWeight: '600' 
-            }}>
-              {entry.macronutrients?.[0]?.calories || 0} kcal
-            </Text>
-          </View>
+            <View style={{ alignItems: 'flex-end' }}>
+              <Text style={{ 
+                fontSize: 15, 
+                color: '#ff6b35', 
+                fontWeight: '600' 
+              }}>
+                {entry.macronutrients?.[0]?.calories || 0} kcal
+              </Text>
+              
+              {/* Macronutrients with icons */}
+              <View style={{ 
+                flexDirection: 'row', 
+                alignItems: 'center', 
+                marginTop: 4,
+                gap: 8
+              }}>
+                {/* Protein */}
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Ionicons name="fitness" size={12} color="#ef4444" />
+                  <Text style={{ 
+                    fontSize: 10, 
+                    color: '#64748b',
+                    marginLeft: 2,
+                    fontWeight: '500'
+                  }}>
+                    {Math.round(entry.macronutrients?.[0]?.protein || 0)}g
+                  </Text>
+                </View>
+                
+                {/* Carbs */}
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Ionicons name="leaf" size={12} color="#10b981" />
+                  <Text style={{ 
+                    fontSize: 10, 
+                    color: '#64748b',
+                    marginLeft: 2,
+                    fontWeight: '500'
+                  }}>
+                    {Math.round(entry.macronutrients?.[0]?.carbohydrates || 0)}g
+                  </Text>
+                </View>
+                
+                {/* Fat */}
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Ionicons name="water" size={12} color="#f59e0b" />
+                  <Text style={{ 
+                    fontSize: 10, 
+                    color: '#64748b',
+                    marginLeft: 2,
+                    fontWeight: '500'
+                  }}>
+                    {Math.round(entry.macronutrients?.[0]?.total_fat || 0)}g
+                  </Text>
+                </View>
+              </View>
+              
+              <Text style={{ 
+                fontSize: 10, 
+                color: '#94a3b8',
+                marginTop: 4
+              }}>
+                Toque para ver detalhes
+              </Text>
+            </View>
+          </TouchableOpacity>
         ))}
       </ScrollView>
     </Animated.View>

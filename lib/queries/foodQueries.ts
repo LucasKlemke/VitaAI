@@ -313,7 +313,10 @@ export const getTodayFoodEntries = async (userId: string) => {
         meal_type,
         time,
         macronutrients(
-          calories
+          calories,
+          protein,
+          carbohydrates,
+          total_fat
         )
       `)
       .eq('user_id', userId)
@@ -330,6 +333,92 @@ export const getTodayFoodEntries = async (userId: string) => {
     console.error('Failed to fetch today food entries:', error);
     throw error;
   }
+};
+
+// Function to get a single food entry with full nutritional data
+export const getFoodEntryById = async (entryId: string) => {
+  try {
+    const { data, error } = await supabase
+      .from('food_entries')
+      .select(`
+        *,
+        macronutrients(*),
+        micronutrients(*)
+      `)
+      .eq('id', entryId)
+      .single();
+
+    if (error) {
+      console.error('Error fetching food entry:', error);
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Failed to fetch food entry:', error);
+    throw error;
+  }
+};
+
+// Function to convert food entry to analysis format
+export const convertFoodEntryToAnalysis = (foodEntry: any) => {
+  const macro = foodEntry.macronutrients?.[0];
+  const micro = foodEntry.micronutrients?.[0];
+
+  return {
+    food_name: foodEntry.food_name,
+    description: foodEntry.description || '',
+    food_category: 'Food', // Default category
+    portion_size: foodEntry.portion_size || 1,
+    portion_description: foodEntry.portion_description || '1 serving',
+    confidence_score: foodEntry.confidence_score || 0.8,
+    image: foodEntry.image_url,
+    macronutrients: {
+      calories: macro?.calories || 0,
+      protein: macro?.protein || 0,
+      carbohydrates: macro?.carbohydrates || 0,
+      total_carbs: macro?.total_carbs || 0,
+      dietary_fiber: macro?.dietary_fiber || 0,
+      net_carbs: macro?.net_carbs || 0,
+      total_fat: macro?.total_fat || 0,
+      saturated_fat: macro?.saturated_fat || 0,
+      trans_fat: macro?.trans_fat || 0,
+      monounsaturated_fat: macro?.monounsaturated_fat || 0,
+      polyunsaturated_fat: macro?.polyunsaturated_fat || 0,
+      cholesterol: macro?.cholesterol || 0,
+      sodium: macro?.sodium || 0,
+      sugar: macro?.sugar || 0,
+      added_sugar: macro?.added_sugar || 0
+    },
+    micronutrients: {
+      vitamin_a: micro?.vitamin_a || 0,
+      vitamin_c: micro?.vitamin_c || 0,
+      vitamin_d: micro?.vitamin_d || 0,
+      vitamin_e: micro?.vitamin_e || 0,
+      vitamin_k: micro?.vitamin_k || 0,
+      vitamin_b1_thiamine: micro?.vitamin_b1_thiamine || 0,
+      vitamin_b2_riboflavin: micro?.vitamin_b2_riboflavin || 0,
+      vitamin_b3_niacin: micro?.vitamin_b3_niacin || 0,
+      vitamin_b5_pantothenic_acid: micro?.vitamin_b5_pantothenic_acid || 0,
+      vitamin_b6_pyridoxine: micro?.vitamin_b6_pyridoxine || 0,
+      vitamin_b7_biotin: micro?.vitamin_b7_biotin || 0,
+      vitamin_b9_folate: micro?.vitamin_b9_folate || 0,
+      vitamin_b12_cobalamin: micro?.vitamin_b12_cobalamin || 0,
+      calcium: micro?.calcium || 0,
+      iron: micro?.iron || 0,
+      magnesium: micro?.magnesium || 0,
+      phosphorus: micro?.phosphorus || 0,
+      potassium: micro?.potassium || 0,
+      zinc: micro?.zinc || 0,
+      copper: micro?.copper || 0,
+      manganese: micro?.manganese || 0,
+      selenium: micro?.selenium || 0,
+      iodine: micro?.iodine || 0,
+      chromium: micro?.chromium || 0,
+      molybdenum: micro?.molybdenum || 0
+    },
+    health_benefits: [] // Default empty array
+  };
 };
 
 // Function to get today's nutrition summary for dashboard

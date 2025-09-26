@@ -48,7 +48,7 @@ export default function RootLayout() {
                         name="result"
                         options={{
                             presentation: 'modal',
-                            title: 'Analyze',
+                            title: 'Análise',
                             gestureEnabled: false,
                             headerLeft: () => (
                                 <TouchableOpacity onPress={handleBack}>

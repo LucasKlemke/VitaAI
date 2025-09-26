@@ -183,6 +183,9 @@ export default function MainDashboard({
       />
 
       <RecentEntries userId={userId} refreshTrigger={refreshTrigger} />
+
+      {/* Safe space at the bottom */}
+      <View style={{ height: 56 }} />
     </View>
   );
 }
