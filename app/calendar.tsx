@@ -319,37 +319,6 @@ export default function Calendar() {
                   </>
                 )}
               </BlurView>
-
-
-              {/* Legend */}
-              <View style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                borderRadius: 16,
-                padding: 16,
-                marginTop: 16,
-                borderWidth: 1,
-                borderColor: 'rgba(255, 255, 255, 0.3)'
-              }}>
-                <View style={{ 
-                  flexDirection: 'row', 
-                  alignItems: 'center',
-                  justifyContent: 'center' 
-                }}>
-                  <View style={{
-                    width: 12,
-                    height: 12,
-                    borderRadius: 6,
-                    backgroundColor: '#ff6b35',
-                    marginRight: 8
-                  }} />
-                  <Text style={{ 
-                    fontSize: 14, 
-                    color: '#6b7280'
-                  }}>
-                    Dias com refeições registradas
-                  </Text>
-                </View>
-              </View>
             </View>
           </ScrollView>
         </LinearGradient>
