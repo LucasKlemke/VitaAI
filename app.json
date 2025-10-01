@@ -1,15 +1,19 @@
 {
   "expo": {
     "name": "Vita.AI",
-    "slug": "Vita.AI",
-    "version": "1.0.0",
+    "slug": "vita-ai",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/vita-icon-black.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.lucasklemke.vitaai",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -43,6 +47,14 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": "https://galaxies.dev"
+      },
+      "eas": {
+        "projectId": "a7566c3d-6e2b-4dc6-8918-2a10739c3dec"
+      }
     }
   }
 }

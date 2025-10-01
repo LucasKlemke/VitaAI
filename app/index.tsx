@@ -1,4 +1,4 @@
-import { Dimensions, ScrollView } from 'react-native';
+import { ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { useSetAtom, useAtomValue } from 'jotai';
@@ -29,7 +29,6 @@ export default function Index() {
   });
   const [loadingNutrition, setLoadingNutrition] = useState(false);
   const refreshTrigger = useAtomValue(refreshTriggerAtom);
-  const { width, height } = Dimensions.get('window');
 
   // Fetch user profile from Supabase when component mounts (only if not already loaded)
   useEffect(() => {
@@ -81,112 +80,6 @@ export default function Index() {
     }
   }, [userProfile?.id, refreshTrigger, userProfileLoading]);
 
-  const captureImage = async (camera = false) => {
-    let result: any;
-    try {
-      if (camera) {
-        await ImagePicker.requestCameraPermissionsAsync();
-        result = await ImagePicker.launchCameraAsync({
-          mediaTypes: ['images'],
-          quality: 1,
-          base64: true,
-        });
-      } else {
-        result = await ImagePicker.launchImageLibraryAsync({
-          mediaTypes: ['images'],
-          quality: 1,
-          base64: true,
-        });
-      }
-
-      if (!result.canceled) {
-        // Show loading toast immediately
-        const toastId = toast.loading('Analyzing your meal...', {
-          position: 'top-center'
-        });
-
-        // Navigate to results page
-        router.push({
-          pathname: '/result',
-          params: { imageUri: result.assets[0].uri }
-        });
-
-        toast.promise(
-          fetch('/api/analyze', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              image: {
-                inlineData: {
-                  data: result.assets[0].base64,
-                  mimeType: 'image/jpeg',
-                },
-              },
-              userId: userProfile?.id,
-              imageUrl: result.assets[0].uri,
-              mealType: 'snack'
-            }),
-          })
-            .then(response => {
-              if (!response.ok) {
-                throw new Error('Analysis failed');
-              }
-              return response.json();
-            })
-            .then(async (data) => {
-              const foodAnalysis = data.data.foodAnalysis;
-              foodAnalysis.image = result.assets[0].uri;
-              setAnalysis(foodAnalysis);
-              
-              // Save to database if userId is provided
-              if (data.userId) {
-                try {
-                  const savedEntry = await saveFoodEntry(
-                    data.userId,
-                    foodAnalysis,
-                    data.imageUrl,
-                    data.mealType
-                  );
-                  console.log('Food entry saved successfully:', savedEntry.id);
-                  
-                  // Refresh today's nutrition data
-                  if (userProfile?.id) {
-                    try {
-                      const updatedNutrition = await getTodayNutritionSummary(userProfile.id);
-                      setDailyNutrition(updatedNutrition);
-                    } catch (refreshError) {
-                      console.error('Error refreshing nutrition data:', refreshError);
-                    }
-                  }
-                } catch (saveError) {
-                  console.error('Failed to save food entry:', saveError);
-                }
-              }
-              
-              return foodAnalysis;
-            }),
-          {
-            loading: 'Analyzing nutritional content...',
-            success: (foodAnalysis) => `Successfully analyzed ${foodAnalysis.identifiedFood}`,
-            error: (err: any) => `Analysis failed: ${err.message}`,
-          }
-        );
-
-        // Dismiss the initial loading toast
-        toast.dismiss(toastId);
-      }
-    } catch (error: any) {
-      console.error(error);
-      toast.error('Failed to process image', {
-        description: error.message,
-        position: 'top-center'
-      });
-      router.back();
-    }
-  };
-
   return (
     <>
       <SignedIn>
@@ -199,14 +92,10 @@ export default function Index() {
             keyboardShouldPersistTaps="handled"
           >
             <MainDashboard
-              width={width}
-              height={height}
               userName={userProfile?.full_name || user?.firstName || 'Usuário'}
               userId={userProfile?.id || ''}
               dailyNutrition={dailyNutrition}
               loadingNutrition={loadingNutrition || userProfileLoading}
-              onCameraPress={() => captureImage(true)}
-              onGalleryPress={() => captureImage(false)}
               refreshTrigger={refreshTrigger}
             />
           </ScrollView>

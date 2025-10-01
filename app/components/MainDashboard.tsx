@@ -13,26 +13,18 @@ interface DailyNutrition {
 }
 
 interface MainDashboardProps {
-  width: number;
-  height: number;
   userName: string;
   userId: string;
   dailyNutrition: DailyNutrition;
   loadingNutrition?: boolean;
-  onCameraPress: () => void;
-  onGalleryPress: () => void;
   refreshTrigger?: number;
 }
 
 export default function MainDashboard({ 
-  width, 
-  height, 
   userName, 
   userId,
   dailyNutrition, 
   loadingNutrition = false,
-  onCameraPress, 
-  onGalleryPress,
   refreshTrigger
 }: MainDashboardProps) {
   // Loading skeleton components

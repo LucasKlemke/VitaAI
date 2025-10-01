@@ -11,6 +11,7 @@ import { useUser } from '@clerk/clerk-expo';
 import { getUserProfile } from '@/lib/queries/userQueries';
 import { saveFoodEntry } from '@/lib/queries/foodQueries';
 import { useState, useEffect } from 'react';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export default function FixedNavbar() {
   const router = useRouter();
@@ -22,6 +23,104 @@ export default function FixedNavbar() {
   const userProfile = useAtomValue(userProfileAtom);
   const userProfileLoading = useAtomValue(userProfileLoadingAtom);
   const { user } = useUser();
+
+  // Initialize Google AI
+  const genAI = new GoogleGenerativeAI(process.env.EXPO_PUBLIC_GOOGLE_GENERATIVE_AI_API_KEY!);
+
+  // Function to analyze food image using Gemini
+  const analyzeFoodImage = async (base64Image: string, mimeType: string) => {
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
+    const prompt = `
+    Analise esta imagem de alimento e forneça informações nutricionais abrangentes.
+
+    Instruções:
+    1. Forneça estimativas realistas baseadas em bancos de dados nutricionais científicos
+    2. Todos os valores nutricionais devem ser números decimais
+    3. portion_size deve ser em gramas
+    4. confidence_score deve ser entre 0.00 e 1.00
+    5. Valores de micronutrientes devem estar nas unidades corretas (mg, mcg, etc.)
+    6. Responda sempre em português brasileiro
+    7. Seja específico e preciso com os valores nutricionais
+
+    Retorne um JSON com a seguinte estrutura:
+    {
+      "foodAnalysis": {
+        "food_name": "string",
+        "description": "string", 
+        "food_category": "string",
+        "portion_size": number,
+        "portion_description": "string",
+        "confidence_score": number,
+        "macronutrients": {
+          "calories": number,
+          "protein": number,
+          "carbohydrates": number,
+          "total_carbs": number,
+          "dietary_fiber": number,
+          "net_carbs": number,
+          "total_fat": number,
+          "saturated_fat": number,
+          "trans_fat": number,
+          "monounsaturated_fat": number,
+          "polyunsaturated_fat": number,
+          "cholesterol": number,
+          "sodium": number,
+          "sugar": number,
+          "added_sugar": number
+        },
+        "micronutrients": {
+          "vitamin_a": number,
+          "vitamin_c": number,
+          "vitamin_d": number,
+          "vitamin_e": number,
+          "vitamin_k": number,
+          "vitamin_b1_thiamine": number,
+          "vitamin_b2_riboflavin": number,
+          "vitamin_b3_niacin": number,
+          "vitamin_b5_pantothenic_acid": number,
+          "vitamin_b6_pyridoxine": number,
+          "vitamin_b7_biotin": number,
+          "vitamin_b9_folate": number,
+          "vitamin_b12_cobalamin": number,
+          "calcium": number,
+          "iron": number,
+          "magnesium": number,
+          "phosphorus": number,
+          "potassium": number,
+          "zinc": number,
+          "copper": number,
+          "manganese": number,
+          "selenium": number,
+          "iodine": number,
+          "chromium": number,
+          "molybdenum": number
+        },
+        "health_benefits": ["string"]
+      }
+    }
+    `;
+
+    const imagePart = {
+      inlineData: {
+        data: base64Image,
+        mimeType: mimeType,
+      },
+    };
+
+    const result = await model.generateContent([prompt, imagePart]);
+    const response = await result.response;
+    const text = response.text();
+    
+    // Parse the JSON response
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error('Failed to parse JSON response from Gemini');
+    }
+    
+    const parsedData = JSON.parse(jsonMatch[0]);
+    return parsedData;
+  };
 
   // Fetch user profile from Supabase when component mounts (only if not already loaded)
   useEffect(() => {
@@ -73,42 +172,20 @@ export default function FixedNavbar() {
         });
 
         toast.promise(
-          fetch('/api/analyze', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              image: {
-                inlineData: {
-                  data: result.assets[0].base64,
-                  mimeType: 'image/jpeg',
-                },
-              },
-              userId: userProfile?.id,
-              imageUrl: result.assets[0].uri,
-              mealType: 'snack'
-            }),
-          })
-            .then(response => {
-              if (!response.ok) {
-                throw new Error('Analysis failed');
-              }
-              return response.json();
-            })
+          analyzeFoodImage(result.assets[0].base64!, 'image/jpeg')
             .then(async (data) => {
-              const foodAnalysis = data.data.foodAnalysis;
+              const foodAnalysis = data.foodAnalysis;
               foodAnalysis.image = result.assets[0].uri;
               setAnalysis(foodAnalysis);
               
               // Save to database if userId is provided
-              if (data.userId) {
+              if (userProfile?.id) {
                 try {
                   const savedEntry = await saveFoodEntry(
-                    data.userId,
+                    userProfile.id,
                     foodAnalysis,
-                    data.imageUrl,
-                    data.mealType
+                    result.assets[0].uri,
+                    'snack'
                   );
                   console.log('Food entry saved successfully:', savedEntry.id);
                   
@@ -122,9 +199,12 @@ export default function FixedNavbar() {
               return foodAnalysis;
             }),
           {
-            loading: 'Analyzing nutritional content...',
-            success: (foodAnalysis) => `Successfully analyzed ${foodAnalysis.identifiedFood}`,
-            error: (err: any) => `Analysis failed: ${err.message}`,
+            loading: 'Analisando...',
+            success: (foodAnalysis) => `Análise realizada com sucesso ${foodAnalysis.food_name}`,
+            error: (err: any) => {
+              console.log(err);
+              return `Falha na análise: ${err.message}`;
+            },
           }
         );
 

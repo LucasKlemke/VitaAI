@@ -1,12 +1,11 @@
 import { Text, View, ScrollView, ActivityIndicator, TouchableOpacity, Dimensions } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
+import Animated, { FadeIn } from 'react-native-reanimated';
 import { SignedIn, SignedOut, useUser } from '@clerk/clerk-expo'
 import { Redirect } from 'expo-router'
 import { useEffect, useState } from 'react'
 import { LinearGradient } from 'expo-linear-gradient'
-import { BlurView } from 'expo-blur'
 import { getFoodEntriesByDate } from '../lib/queries/foodQueries'
 import { getUserProfile } from '../lib/queries/userQueries'
 import DashboardHeader from './components/DashboardHeader';
